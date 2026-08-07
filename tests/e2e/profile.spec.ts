@@ -67,12 +67,78 @@ test('uses a desktop banner focal point without changing the mobile crop', async
   );
 
   if (testInfo.project.name === 'desktop' || testInfo.project.name === 'tablet-768') {
-    expect(objectPosition).toBe('50% 76%');
+    expect(objectPosition).toBe('50% 100%');
   }
 
   if (testInfo.project.name === 'mobile-320' || testInfo.project.name === 'mobile-390' || testInfo.project.name === 'no-js') {
     expect(objectPosition).toBe('100% 50%');
   }
+});
+
+test('keeps the desktop banner legible and the solutions hierarchy contained', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Desktop composition is calibrated once at 1440 by 900.');
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const layout = await page.locator('body').evaluate((body) => {
+    const banner = document.querySelector<HTMLElement>('.profile-hero__banner')!;
+    const image = banner.querySelector('img')!;
+    const card = document.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+    const section = document.querySelector<HTMLElement>('.link-section-label')!;
+    const armCopy = document.querySelector<HTMLElement>('[data-link-id="arm"] .link-card__copy')!;
+    const cardBox = card.getBoundingClientRect();
+    const sectionBox = section.getBoundingClientRect();
+    const armCopyBox = armCopy.getBoundingClientRect();
+
+    return {
+      bannerHeight: banner.getBoundingClientRect().height,
+      imagePosition: getComputedStyle(image).objectPosition,
+      scrollbarWidth: getComputedStyle(body).scrollbarWidth,
+      scrollHeight: document.documentElement.scrollHeight,
+      viewportHeight: window.innerHeight,
+      cardWidth: cardBox.width,
+      cardCenter: cardBox.left + cardBox.width / 2,
+      sectionText: section.textContent?.trim(),
+      sectionLeft: sectionBox.left,
+      armCopyLeft: armCopyBox.left,
+      horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth,
+    };
+  });
+
+  expect(layout.imagePosition).toBe('50% 100%');
+  expect(layout.bannerHeight).toBeGreaterThanOrEqual(230);
+  expect(layout.scrollbarWidth).toBe('auto');
+  expect(layout.scrollHeight).toBeLessThanOrEqual(layout.viewportHeight);
+  expect(layout.cardWidth).toBeGreaterThanOrEqual(429);
+  expect(Math.abs(layout.cardCenter - 720)).toBeLessThanOrEqual(1);
+  expect(layout.sectionText).toBe('SOLUÇÕES');
+  expect(Math.abs(layout.sectionLeft - layout.armCopyLeft)).toBeLessThanOrEqual(1);
+  expect(layout.horizontalOverflow).toBe(false);
+});
+
+test('keeps cards nearly full width within mobile safe gutters', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Safe touch gutters are calibrated at the primary mobile viewport.');
+
+  await page.goto('/');
+
+  const geometry = await page.locator('[data-link-id="whatsapp"]').evaluate((card) => {
+    const box = card.getBoundingClientRect();
+    return {
+      left: box.left,
+      right: box.right,
+      width: box.width,
+      viewportWidth: window.innerWidth,
+      horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth,
+    };
+  });
+
+  expect(geometry.left).toBeGreaterThanOrEqual(12);
+  expect(geometry.left).toBeLessThanOrEqual(16);
+  expect(geometry.viewportWidth - geometry.right).toBeGreaterThanOrEqual(12);
+  expect(geometry.viewportWidth - geometry.right).toBeLessThanOrEqual(16);
+  expect(geometry.width).toBeGreaterThanOrEqual(geometry.viewportWidth - 32);
+  expect(geometry.horizontalOverflow).toBe(false);
 });
 
 test('loads Cal only after intent and restores focus after Escape', async ({ page }, testInfo) => {
