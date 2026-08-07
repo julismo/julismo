@@ -1,4 +1,30 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+const emulateSafariOrientationPermission = async (
+  page: Page,
+  permission: 'granted' | 'denied',
+) => {
+  await page.addInitScript((permissionState) => {
+    class SafariOrientationEvent extends Event {
+      beta: number | null;
+      gamma: number | null;
+
+      constructor(type: string, init: { beta?: number; gamma?: number } = {}) {
+        super(type);
+        this.beta = init.beta ?? null;
+        this.gamma = init.gamma ?? null;
+      }
+    }
+
+    Object.defineProperty(SafariOrientationEvent, 'requestPermission', {
+      value: async () => permissionState,
+    });
+    Object.defineProperty(window, 'DeviceOrientationEvent', {
+      configurable: true,
+      value: SafariOrientationEvent,
+    });
+  }, permission);
+};
 
 test('uses a desktop banner focal point without changing the mobile crop', async ({ page }, testInfo) => {
   await page.goto('/');
@@ -254,6 +280,44 @@ test('centres the Julismo heading independently from its verification badge', as
 
   expect(Math.abs(geometry.headingCenter - geometry.viewportCenter)).toBeLessThanOrEqual(1);
   expect(geometry.badgeLeft).toBeGreaterThan(geometry.headingRight + 6);
+});
+
+test('enables bounded orientation motion after Safari grants permission', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Permission flow is covered once at mobile width.');
+
+  await emulateSafariOrientationPermission(page, 'granted');
+
+  await page.goto('/');
+  const consent = page.getByRole('button', { name: 'Ativar movimento' });
+
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'permission-required');
+  await expect(consent).toBeVisible();
+  await consent.click();
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'active');
+
+  await page.evaluate(() => {
+    const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
+    window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 0 }));
+    window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 24, gamma: 18 }));
+  });
+
+  await expect.poll(() => page.locator('[data-profile-plane]').evaluate((plane) => (
+    plane.style.getPropertyValue('--tilt-x')
+  ))).not.toBe('0deg');
+});
+
+test('keeps motion disabled when Safari permission is denied', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Permission flow is covered once at mobile width.');
+
+  await emulateSafariOrientationPermission(page, 'denied');
+  await page.goto('/');
+
+  const consent = page.getByRole('button', { name: 'Ativar movimento' });
+  await expect(consent).toBeVisible();
+  await consent.click();
+
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'denied');
+  await expect(consent).toBeHidden();
 });
 
 test('reduces motion when requested', async ({ page }, testInfo) => {
