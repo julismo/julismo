@@ -1,5 +1,7 @@
 # Hero, Verification Badge, and Rounded QR Refinement Plan
 
+> **Status:** The original cover source is superseded by `public/images/julismo-hero-banner.png` and its responsive edge treatment in `2026-08-07-banner-responsive-hardening.md`. This plan remains the record for hero overlap, badge, scale, and QR decisions.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Turn the hero into a true cover-banner composition, use the generated rounded-check badge safely, enlarge the mobile hierarchy, and generate scan-safe rounded QR assets.
@@ -11,7 +13,7 @@
 ## Global Constraints
 
 - Preserve copy, five destinations, card order, icon set, black/silver palette, orientation effect, reduced-motion behaviour, vertical navigation, and no horizontal scrolling.
-- The cover uses `public/images/julismo-hero-wave.png`; it is decorative, full-bleed, and the portrait overlaps its lower edge at the horizontal centre.
+- The current cover uses `public/images/julismo-hero-banner.png`; it is decorative, full-bleed, and the portrait overlaps its lower edge at the horizontal centre.
 - Use only `public/images/julismo-verified-rosette-rounded.png` for the generated badge. It must use empty `alt`, `aria-hidden="true"`, and a CSS box large enough not to crop it. Remove unused generated badge variants before commit.
 - Keep the background illumination fixed to the viewport and below the page shell.
 - QR assets encode exactly `https://julismo.vercel.app/`, use error-correction level H, retain a 4-module black quiet zone, use `#FFFFFF` modules on `#000000`, and have no logo or artwork inside the QR reading area.

@@ -7,7 +7,7 @@ Preserve the approved black-and-silver identity while making the illumination co
 ## Visual direction
 
 - A fixed, viewport-sized radial backdrop sits below every page element. It preserves the existing silver illumination at the top of the viewport while the user scrolls, rather than letting the document-height background end in flat black.
-- The supplied 1534 by 650 silver-wave image becomes a true full-bleed cover banner at the start of the page. Julismo's portrait is centred and overlaps the lower edge of that banner, following the visual relationship in the supplied Linktree reference. The name and bio remain underneath the portrait.
+- The supplied 1584 by 396 `Banner.png` becomes the current true full-bleed cover banner at the start of the page. On small screens its crop favours the authored right-side role and technology artwork. Julismo's portrait is centred and overlaps the lower edge of that banner, following the visual relationship in the supplied Linktree reference. A subtle dark veil and inset silver hairline distinguish the banner from the scrolling page background; the name and bio remain underneath the portrait.
 - The generated silver verification rosette with its rounded check mark replaces the inline SVG. It is cropped to its visible bounds, rendered as a small non-interactive image, and has enough CSS space to avoid clipping.
 - Portrait, name, bio, card height, card typography, icons, and horizontal content width scale up for 320 px and 390 px mobile screens. Cards move lower as a result of the cover-banner hierarchy.
 - The page remains a normal vertical document. A thin black-and-silver scrollbar is styled where the browser exposes it; horizontal scrolling remains prohibited.
