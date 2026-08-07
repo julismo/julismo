@@ -19,6 +19,16 @@ export const profile = {
       primary: true,
     },
     {
+      id: 'cal',
+      title: 'Agendar diagnóstico',
+      description: '30 min · escolha o melhor horário',
+      href: 'https://cal.com/julismo-costa-3nxpms/30min',
+      icon: 'cal',
+      section: 'contact',
+      external: true,
+      interaction: 'cal-dialog',
+    },
+    {
       id: 'arm',
       title: 'ARM Solutions',
       description: 'IA e automação para PMEs',

@@ -253,12 +253,6 @@ a {
   color: #ededf0;
 }
 
-.link-card__icon--arm {
-  border-radius: 10px;
-  background: linear-gradient(145deg, #f4f4f6, #bfc0c7);
-  color: #111113;
-}
-
 .brand-icon__svg {
   display: block;
   width: 16px;
@@ -357,12 +351,6 @@ a {
   content: '';
 }
 
-.link-card--primary .link-card__icon {
-  border-color: #fff;
-  background: #f4f4f6;
-  box-shadow: 0 4px 10px rgb(255 255 255 / 13%);
-  color: #111113;
-}
 
 .page-divider {
   height: 1px;

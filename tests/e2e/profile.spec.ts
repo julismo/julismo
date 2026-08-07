@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test';
 
-test('renders the approved identity and five complete action cards', async ({ page }) => {
+test('renders the approved identity and six complete action cards', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByRole('heading', { level: 1, name: 'Julismo' })).toBeVisible();
   await expect(
     page.getByText('Simplifico processos que atrasam a equipa, sem trocar o que já funciona.'),
   ).toBeVisible();
-  await expect(page.getByRole('link')).toHaveCount(5);
+  await expect(page.getByRole('link')).toHaveCount(6);
   await expect(
     page.getByRole('link', { name: /Falar comigo.*WhatsApp.*resposta direta/ }),
   ).toHaveAttribute('href', 'https://api.whatsapp.com/send?phone=351933751885');
@@ -39,7 +39,7 @@ test('keeps a global illuminated backdrop and a scaled decorative hero banner', 
   });
   expect(edgeLayer.backgroundImage).toContain('linear-gradient');
   expect(edgeLayer.height).not.toBe('0px');
-  await expect(page.locator('.link-card__action')).toHaveCount(5);
+  await expect(page.locator('.link-card__action')).toHaveCount(6);
   await expect(page.locator('.link-card__action').first()).toHaveAttribute('aria-hidden', 'true');
   const overlap = await page.locator('.profile-hero').evaluate((hero) => {
     const banner = hero.querySelector('.profile-hero__banner')!.getBoundingClientRect();
@@ -83,11 +83,12 @@ test('prevents horizontal overflow at narrow effective widths', async ({ page },
   }
 });
 
-test('keeps all five destinations ordered and secures external navigation', async ({ page }) => {
+test('keeps all six destinations ordered and secures external navigation', async ({ page }) => {
   await page.goto('/');
 
   const expectedLinks = [
     { id: 'whatsapp', href: 'https://api.whatsapp.com/send?phone=351933751885', external: false },
+    { id: 'cal', href: 'https://cal.com/julismo-costa-3nxpms/30min', external: true },
     { id: 'arm', href: 'https://arm-lda.com/', external: true },
     { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
     { id: 'github', href: 'https://github.com/julismo', external: true },
@@ -105,6 +106,26 @@ test('keeps all five destinations ordered and secures external navigation', asyn
       await expect(card).not.toHaveAttribute('target', '_blank');
     }
   }
+
+  const bookingCard = page.locator('[data-link-id="cal"]');
+  await expect(bookingCard).toHaveAttribute('href', 'https://cal.com/julismo-costa-3nxpms/30min');
+  await expect(bookingCard).toHaveAttribute('target', '_blank');
+  await expect(bookingCard).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(bookingCard).toHaveAttribute('data-cal-trigger', '');
+  await expect(bookingCard).toHaveAttribute('aria-haspopup', 'dialog');
+  await expect(bookingCard).toHaveAttribute('aria-controls', 'cal-dialog');
+
+  for (const id of ['whatsapp', 'arm', 'cal']) {
+    const icon = page.locator(`[data-link-id="${id}"] .link-card__icon`);
+    const shape = await icon.evaluate((element) => {
+      const styles = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return { borderRadius: styles.borderRadius, width: rect.width, height: rect.height };
+    });
+    expect(shape.borderRadius).toBe('50%');
+    expect(shape.width).toBe(shape.height);
+  }
+  await expect(page.locator('[data-link-id="arm"] .link-card__icon')).not.toHaveClass(/link-card__icon--arm/);
 });
 
 test('has no horizontal overflow', async ({ page }) => {

@@ -1,4 +1,4 @@
-export type LinkId = 'whatsapp' | 'arm' | 'email' | 'github' | 'x';
+export type LinkId = 'whatsapp' | 'cal' | 'arm' | 'email' | 'github' | 'x';
 
 export type IconName = LinkId;
 
@@ -11,6 +11,7 @@ export interface ProfileLink {
   section: 'contact' | 'work';
   external: boolean;
   primary?: boolean;
+  interaction?: 'cal-dialog';
 }
 
 const allowedSchemes = new Set(['https:', 'mailto:']);

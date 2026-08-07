@@ -21,6 +21,7 @@ describe('profile link contract', () => {
   test('keeps the approved visual hierarchy and microcopy', () => {
     expect(profile.links.map(({ id, title, description, section }) => ({ id, title, description, section }))).toEqual([
       { id: 'whatsapp', title: 'Falar comigo', description: 'WhatsApp · resposta direta', section: 'contact' },
+      { id: 'cal', title: 'Agendar diagnóstico', description: '30 min · escolha o melhor horário', section: 'contact' },
       { id: 'arm', title: 'ARM Solutions', description: 'IA e automação para PMEs', section: 'work' },
       { id: 'email', title: 'Email', description: 'Escreve-me diretamente', section: 'contact' },
       { id: 'github', title: 'GitHub', description: 'Código e projetos open source', section: 'contact' },
@@ -31,6 +32,7 @@ describe('profile link contract', () => {
   test('keeps every approved destination and navigation policy', () => {
     expect(profile.links.map(({ id, href, external }) => ({ id, href, external }))).toEqual([
       { id: 'whatsapp', href: 'https://api.whatsapp.com/send?phone=351933751885', external: false },
+      { id: 'cal', href: 'https://cal.com/julismo-costa-3nxpms/30min', external: true },
       { id: 'arm', href: 'https://arm-lda.com/', external: true },
       { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
       { id: 'github', href: 'https://github.com/julismo', external: true },

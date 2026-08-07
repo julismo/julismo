@@ -10,6 +10,9 @@ const { link } = Astro.props;
 const externalAttributes = link.external
   ? { target: '_blank', rel: 'noopener noreferrer' }
   : {};
+const calAttributes = link.interaction === 'cal-dialog'
+  ? { 'data-cal-trigger': '', 'aria-haspopup': 'dialog', 'aria-controls': 'cal-dialog' }
+  : {};
 ---
 
 <a
@@ -18,8 +21,9 @@ const externalAttributes = link.external
   data-link-id={link.id}
   aria-label={`${link.title} — ${link.description}`}
   {...externalAttributes}
+  {...calAttributes}
 >
-  <span class:list={['link-card__icon', { 'link-card__icon--arm': link.icon === 'arm' }]}>
+  <span class="link-card__icon">
     <BrandIcon name={link.icon} />
   </span>
   <span class="link-card__copy">
