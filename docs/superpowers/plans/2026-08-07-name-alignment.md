@@ -102,4 +102,3 @@
   git add tests/e2e/profile.spec.ts src/styles/global.css
   git commit -m "fix: centre profile name independently"
   ```
-

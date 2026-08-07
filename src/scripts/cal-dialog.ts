@@ -28,12 +28,12 @@ const ensureCal = (): Promise<void> => {
       hasMounted = true;
       calendarStatus?.setAttribute('hidden', '');
     })
-    .catch((error: unknown) => {
+    .catch(() => {
       calendarStatus?.removeAttribute('hidden');
       if (calendarStatus) {
         calendarStatus.textContent = 'Não foi possível carregar o calendário. Pode abrir o agendamento numa nova página.';
       }
-      throw error;
+      calPromise = null;
     });
 
   return calPromise;

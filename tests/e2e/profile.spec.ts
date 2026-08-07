@@ -44,6 +44,23 @@ test('loads Cal only after intent and restores focus after Escape', async ({ pag
   await expect(bookingCard).toBeFocused();
 });
 
+test('keeps the Cal dialog usable when its lazy module cannot load', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'This lazy-load failure contract runs once at the desktop viewport.');
+
+  const pageErrors: Error[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error));
+  await page.route('**/@calcom_embed-snippet.js*', (route) => route.abort('failed'));
+
+  await page.goto('/');
+  await page.locator('[data-cal-trigger]').click();
+
+  await expect(page.locator('#cal-dialog')).toBeVisible();
+  await expect(page.locator('[data-cal-status]')).toHaveText(
+    'Não foi possível carregar o calendário. Pode abrir o agendamento numa nova página.',
+  );
+  await expect.poll(() => pageErrors).toEqual([]);
+});
+
 test('closes the Cal dialog when its backdrop is clicked', async ({ page }, testInfo) => {
   test.skip(
     ['no-js', 'mobile-320', 'mobile-390'].includes(testInfo.project.name),
