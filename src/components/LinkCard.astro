@@ -26,5 +26,9 @@ const externalAttributes = link.external
     <strong>{link.title}</strong>
     <small>{link.description}</small>
   </span>
-  <span class="link-card__arrow" aria-hidden="true">↗</span>
+  <span class="link-card__action" aria-hidden="true">
+    <svg class="link-card__action-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h13m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </span>
 </a>

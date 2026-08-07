@@ -26,8 +26,21 @@ test('keeps the full card keyboard-operable', async ({ page }) => {
 test('keeps a global illuminated backdrop and a scaled decorative hero banner', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('.profile-hero__banner')).toHaveAttribute('aria-hidden', 'true');
-  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('src', '/images/julismo-hero-wave.png');
+  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute(
+    'src',
+    '/images/julismo-hero-banner.png',
+  );
+  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('width', '1584');
+  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('height', '396');
   await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('alt', '');
+  const edgeLayer = await page.locator('.profile-hero__banner').evaluate((element) => {
+    const styles = getComputedStyle(element, '::before');
+    return { backgroundImage: styles.backgroundImage, height: styles.height };
+  });
+  expect(edgeLayer.backgroundImage).toContain('linear-gradient');
+  expect(edgeLayer.height).not.toBe('0px');
+  await expect(page.locator('.link-card__action')).toHaveCount(5);
+  await expect(page.locator('.link-card__action').first()).toHaveAttribute('aria-hidden', 'true');
   const overlap = await page.locator('.profile-hero').evaluate((hero) => {
     const banner = hero.querySelector('.profile-hero__banner')!.getBoundingClientRect();
     const portrait = hero.querySelector('.profile-hero__image')!.getBoundingClientRect();
@@ -54,6 +67,20 @@ test('keeps a global illuminated backdrop and a scaled decorative hero banner', 
   expect(backdrop.position).toBe('fixed');
   expect(backdrop.backgroundImage).toContain('radial-gradient');
   await expect(page.locator('.link-card').first()).toHaveCSS('min-height', '66px');
+});
+
+test('prevents horizontal overflow at narrow effective widths', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'This regression is specific to mobile-sized viewports.');
+
+  for (const width of [280, 320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/');
+    const dimensions = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.innerWidth);
+  }
 });
 
 test('keeps all five destinations ordered and secures external navigation', async ({ page }) => {
@@ -98,9 +125,11 @@ test('keeps the fixed backdrop visible after a real 390px mobile scroll', async 
   }));
   expect(initial.scrollHeight).toBeGreaterThan(initial.viewportHeight);
   expect(initial.horizontalOverflow).toBe(false);
+  await page.screenshot({ path: 'output/playwright/banner-390-before-scroll.png', fullPage: false });
 
   await page.mouse.wheel(0, 240);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await page.screenshot({ path: 'output/playwright/banner-390-after-scroll.png', fullPage: false });
 
   const backdropPosition = await page.locator('body').evaluate((element) =>
     getComputedStyle(element, '::before').position,
