@@ -93,4 +93,3 @@
   git add tests/e2e/profile.spec.ts src/styles/global.css
   git commit -m "fix: preserve mobile scroll room"
   ```
-

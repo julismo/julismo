@@ -23,5 +23,4 @@ The Canva business-card artwork has a black field. The reusable Julismo QR will 
 - Extend the renderer test to assert the inverted colour contract together with its protected quiet zone and rounded finder geometry.
 - Regenerate all three output assets.
 - Decode the PNG, plain SVG, and card SVG after rasterisation using OpenCV. Each must return the exact target URL.
-- Run the full repository verification and copy the confirmed PNG to `C:\Users\julis\Downloads\QR-JULISMO-FINAL.png` for Canva.
-
+- Run the full repository verification and copy the confirmed PNG to `C:\Users\julis\Downloads\QR-JULISMO-BRANCO-FINAL.png` for Canva.
