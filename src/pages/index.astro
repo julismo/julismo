@@ -1,0 +1,30 @@
+---
+import LinkCard from '../components/LinkCard.astro';
+import CalDialog from '../components/CalDialog.astro';
+import ProfileHero from '../components/ProfileHero.astro';
+import { profile } from '../data/profile';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Julismo — Processos mais simples" description={profile.bio}>
+  <main class="page-shell" data-profile-plane>
+    <ProfileHero name={profile.name} bio={profile.bio} image={profile.image} />
+    <nav class="link-list" aria-label="Contactos e presença digital">
+      {
+        profile.links.map((link) => (
+          <>
+            {link.section === 'work' && <span class="link-section-label">TRABALHO</span>}
+            <LinkCard link={link} />
+          </>
+        ))
+      }
+    </nav>
+    <div class="page-divider" aria-hidden="true"></div>
+    <footer class="page-footer">{profile.fullName}</footer>
+  </main>
+  <CalDialog />
+  <script>
+    import '../scripts/motion';
+    import '../scripts/cal-dialog';
+  </script>
+</BaseLayout>
