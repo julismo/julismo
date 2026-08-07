@@ -1,0 +1,13 @@
+:root {
+  --color-bg: #0a0a0b;
+  --color-surface: #111113;
+  --color-surface-raised: #1f1f23;
+  --color-text: #f5f5f7;
+  --color-muted: #a5a5ae;
+  --color-faint: #777780;
+  --color-line: rgb(255 255 255 / 10%);
+  --color-line-strong: rgb(232 232 236 / 25%);
+  --color-silver: #e9e9ee;
+  --radius-card: 15px;
+  --content-width: 360px;
+}

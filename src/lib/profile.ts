@@ -8,6 +8,7 @@ export interface ProfileLink {
   description: string;
   href: string;
   icon: IconName;
+  section: 'contact' | 'work';
   external: boolean;
   primary?: boolean;
 }

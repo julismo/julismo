@@ -1,0 +1,28 @@
+---
+import VerifiedRosette from './VerifiedRosette.astro';
+
+interface Props {
+  name: string;
+  bio: string;
+  image: string;
+}
+
+const { name, bio, image } = Astro.props;
+---
+
+<header class="profile-hero">
+  <img
+    class="profile-hero__image"
+    src={image}
+    alt="Retrato profissional de Julismo"
+    width="156"
+    height="156"
+    loading="eager"
+    decoding="async"
+  />
+  <div class="profile-hero__name-row">
+    <h1>{name}</h1>
+    <VerifiedRosette />
+  </div>
+  <p class="profile-hero__bio">{bio}</p>
+</header>

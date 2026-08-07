@@ -1,0 +1,30 @@
+---
+import type { ProfileLink } from '../lib/profile';
+import BrandIcon from './BrandIcon.astro';
+
+interface Props {
+  link: ProfileLink;
+}
+
+const { link } = Astro.props;
+const externalAttributes = link.external
+  ? { target: '_blank', rel: 'noopener noreferrer' }
+  : {};
+---
+
+<a
+  class:list={['link-card', { 'link-card--primary': link.primary, 'link-card--work': link.section === 'work' }]}
+  href={link.href}
+  data-link-id={link.id}
+  aria-label={`${link.title} — ${link.description}`}
+  {...externalAttributes}
+>
+  <span class:list={['link-card__icon', { 'link-card__icon--arm': link.icon === 'arm' }]}>
+    <BrandIcon name={link.icon} />
+  </span>
+  <span class="link-card__copy">
+    <strong>{link.title}</strong>
+    <small>{link.description}</small>
+  </span>
+  <span class="link-card__arrow" aria-hidden="true">↗</span>
+</a>

@@ -8,6 +8,7 @@ const validLink: ProfileLink = {
   description: 'Enviar uma mensagem',
   href: 'mailto:julismocosta@gmail.com',
   icon: 'email',
+  section: 'contact',
   external: false,
 };
 
@@ -15,6 +16,16 @@ describe('profile link contract', () => {
   test('accepts the approved profile links', () => {
     expect(validateProfileLinks(profile.links)).toEqual([]);
     expect(() => assertProfileLinks(profile.links)).not.toThrow();
+  });
+
+  test('keeps the approved visual hierarchy and microcopy', () => {
+    expect(profile.links.map(({ id, title, description, section }) => ({ id, title, description, section }))).toEqual([
+      { id: 'whatsapp', title: 'Falar comigo', description: 'WhatsApp · resposta direta', section: 'contact' },
+      { id: 'arm', title: 'ARM Solutions', description: 'IA e automação para PMEs', section: 'work' },
+      { id: 'email', title: 'Email', description: 'Escreve-me diretamente', section: 'contact' },
+      { id: 'github', title: 'GitHub', description: 'Código e projetos open source', section: 'contact' },
+      { id: 'x', title: 'X', description: 'Ideias e atualizações', section: 'contact' },
+    ]);
   });
 
   test('rejects duplicate IDs, absent copy and unsafe schemes', () => {
