@@ -153,10 +153,10 @@ a {
 }
 
 .profile-hero__name-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  display: grid;
+  position: relative;
+  width: 100%;
+  place-items: center;
 }
 
 .profile-hero h1 {
@@ -170,10 +170,13 @@ a {
 
 .verified-rosette {
   display: block;
+  position: absolute;
+  top: 50%;
+  left: calc(50% + clamp(48px, 12.5vw, 52px));
   width: 21px;
   height: 21px;
-  flex: 0 0 21px;
   object-fit: contain;
+  transform: translateY(-50%);
 }
 
 .profile-hero__bio {

@@ -137,6 +137,25 @@ test('keeps the fixed backdrop visible after a real 390px mobile scroll', async 
   expect(backdropPosition).toBe('fixed');
 });
 
+test('centres the Julismo heading independently from its verification badge', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'This composition is calibrated at the primary mobile viewport.');
+  await page.goto('/');
+
+  const geometry = await page.locator('.profile-hero').evaluate((hero) => {
+    const heading = hero.querySelector('h1')!.getBoundingClientRect();
+    const badge = hero.querySelector('img.verified-rosette')!.getBoundingClientRect();
+    return {
+      headingCenter: heading.left + heading.width / 2,
+      viewportCenter: window.innerWidth / 2,
+      headingRight: heading.right,
+      badgeLeft: badge.left,
+    };
+  });
+
+  expect(Math.abs(geometry.headingCenter - geometry.viewportCenter)).toBeLessThanOrEqual(1);
+  expect(geometry.badgeLeft).toBeGreaterThan(geometry.headingRight + 6);
+});
+
 test('reduces motion when requested', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'no-js', 'The no-JS project does not run client motion enhancement.');
   await page.emulateMedia({ reducedMotion: 'reduce' });
