@@ -256,9 +256,9 @@ Start a temporary local server in a hidden window, then use the Playwright CLI w
 $server = Start-Process npm.cmd -ArgumentList 'run', 'dev', '--', '--host', '127.0.0.1', '--port', '4321' -WindowStyle Hidden -PassThru
 npx --package @playwright/cli playwright-cli -s=layout-polish open http://127.0.0.1:4321
 npx --package @playwright/cli playwright-cli -s=layout-polish resize 1440 900
-npx --package @playwright/cli playwright-cli -s=layout-polish screenshot --path output/playwright/layout-desktop.png
+npx --package @playwright/cli playwright-cli -s=layout-polish screenshot --filename layout-desktop.png
 npx --package @playwright/cli playwright-cli -s=layout-polish resize 390 844
-npx --package @playwright/cli playwright-cli -s=layout-polish screenshot --path output/playwright/layout-mobile.png
+npx --package @playwright/cli playwright-cli -s=layout-polish screenshot --filename layout-mobile.png
 npx --package @playwright/cli playwright-cli -s=layout-polish close
 Stop-Process -Id $server.Id
 ```
