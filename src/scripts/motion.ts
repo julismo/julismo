@@ -13,6 +13,7 @@ type PermissionAwareOrientationEvent = typeof DeviceOrientationEvent & {
 const root = document.documentElement;
 const plane = document.querySelector<HTMLElement>('[data-profile-plane]');
 const consent = document.querySelector<HTMLButtonElement>('[data-motion-consent]');
+const status = document.querySelector<HTMLElement>('[data-motion-status]');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const orientationEvent =
   typeof DeviceOrientationEvent === 'undefined'
@@ -70,32 +71,45 @@ if (!plane || !orientationEvent) {
     root.dataset.motion = 'permission-required';
     consent.hidden = false;
 
+    const settlePermission = (message: string, shouldRestoreFocus: boolean) => {
+      consent.hidden = true;
+      if (status) status.textContent = message;
+
+      if (shouldRestoreFocus) {
+        window.requestAnimationFrame(() => {
+          document.querySelector<HTMLElement>('[data-link-id="whatsapp"]')?.focus();
+        });
+      }
+    };
+
     consent.addEventListener(
       'click',
       () => {
+        const shouldRestoreFocus = document.activeElement === consent;
         consent.disabled = true;
         let permissionRequest: Promise<'granted' | 'denied'>;
 
         try {
           permissionRequest = orientationEvent.requestPermission!();
         } catch {
-          consent.hidden = true;
           root.dataset.motion = 'denied';
+          settlePermission('Movimento não ativado.', shouldRestoreFocus);
           return;
         }
 
         void permissionRequest
           .then((permission) => {
-            consent.hidden = true;
             if (permission === 'granted') {
               startMotion();
+              settlePermission('Movimento ativado.', shouldRestoreFocus);
             } else {
               root.dataset.motion = 'denied';
+              settlePermission('Movimento não ativado.', shouldRestoreFocus);
             }
           })
           .catch(() => {
-            consent.hidden = true;
             root.dataset.motion = 'denied';
+            settlePermission('Movimento não ativado.', shouldRestoreFocus);
           });
       },
       { once: true },

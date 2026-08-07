@@ -292,8 +292,11 @@ test('enables bounded orientation motion after Safari grants permission', async 
 
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'permission-required');
   await expect(consent).toBeVisible();
-  await consent.click();
+  await consent.focus();
+  await page.keyboard.press('Enter');
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'active');
+  await expect(page.locator('[data-motion-status]')).toHaveText('Movimento ativado.');
+  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
 
   await page.evaluate(() => {
     const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
@@ -301,9 +304,10 @@ test('enables bounded orientation motion after Safari grants permission', async 
     window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 24, gamma: 18 }));
   });
 
-  await expect.poll(() => page.locator('[data-profile-plane]').evaluate((plane) => (
-    plane.style.getPropertyValue('--tilt-x')
-  ))).not.toBe('0deg');
+  await expect.poll(() => page.locator('[data-profile-plane]').evaluate((plane) => {
+    const tilt = Number.parseFloat(plane.style.getPropertyValue('--tilt-x'));
+    return Number.isFinite(tilt) && tilt !== 0;
+  })).toBe(true);
 });
 
 test('keeps motion disabled when Safari permission is denied', async ({ page }, testInfo) => {
@@ -314,10 +318,13 @@ test('keeps motion disabled when Safari permission is denied', async ({ page }, 
 
   const consent = page.getByRole('button', { name: 'Ativar movimento' });
   await expect(consent).toBeVisible();
-  await consent.click();
+  await consent.focus();
+  await page.keyboard.press('Enter');
 
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'denied');
   await expect(consent).toBeHidden();
+  await expect(page.locator('[data-motion-status]')).toHaveText('Movimento não ativado.');
+  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
 });
 
 test('reduces motion when requested', async ({ page }, testInfo) => {
