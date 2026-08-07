@@ -62,7 +62,7 @@ The sole skip is the intentional no-JS reduced-motion test skip.
 
 ## Commit
 
-Commit SHA: PENDING
+Task 2 implementation commit SHA: `f7050060cf8b07ced2d288cc9b4685073257f52a`.
 
 ## Concerns
 
