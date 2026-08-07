@@ -19,8 +19,6 @@ body {
   margin: 0;
   overflow-x: clip;
   background: var(--color-bg);
-  scrollbar-color: #8d8d96 #050506;
-  scrollbar-width: thin;
 }
 
 body::before {
@@ -46,20 +44,6 @@ body::after {
   pointer-events: none;
   transform: translateX(-50%);
   animation: ambient-shift 9s ease-in-out infinite alternate;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #050506;
-}
-
-::-webkit-scrollbar-thumb {
-  border: 2px solid #050506;
-  border-radius: 999px;
-  background: linear-gradient(#bdbdc5, #71717a);
 }
 
 a {
@@ -136,6 +120,25 @@ a {
 @media (max-width: 480px) {
   .profile-hero__banner img {
     object-position: right center;
+  }
+}
+
+@media (min-width: 768px) {
+  .page-shell {
+    width: min(calc(100% - 48px), 430px);
+    padding-bottom: 10px;
+  }
+
+  .profile-hero__banner {
+    height: clamp(210px, 16vw, 260px);
+  }
+
+  .profile-hero__banner::after {
+    background: linear-gradient(to bottom, transparent 76%, rgb(10 10 11 / 8%) 88%, var(--color-bg));
+  }
+
+  .profile-hero__banner img {
+    object-position: center bottom;
   }
 }
 
@@ -245,7 +248,8 @@ a {
 }
 
 .link-section-label {
-  margin: 6px 0 -1px;
+  justify-self: start;
+  margin: 6px 0 -1px 58px;
   color: var(--color-faint);
   font-size: 0.64rem;
   font-weight: 700;
