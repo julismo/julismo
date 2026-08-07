@@ -90,11 +90,21 @@ test('keeps the desktop banner legible and the solutions hierarchy contained', a
     const cardBox = card.getBoundingClientRect();
     const sectionBox = section.getBoundingClientRect();
     const armCopyBox = armCopy.getBoundingClientRect();
+    const customScrollbarSelectors = Array.from(document.styleSheets).flatMap((sheet) => {
+      try {
+        return Array.from(sheet.cssRules)
+          .map((rule) => ('selectorText' in rule ? (rule as CSSStyleRule).selectorText : ''))
+          .filter((selector) => selector.includes('::-webkit-scrollbar'));
+      } catch {
+        return [];
+      }
+    });
 
     return {
       bannerHeight: banner.getBoundingClientRect().height,
       imagePosition: getComputedStyle(image).objectPosition,
       scrollbarWidth: getComputedStyle(body).scrollbarWidth,
+      customScrollbarSelectors,
       scrollHeight: document.documentElement.scrollHeight,
       viewportHeight: window.innerHeight,
       cardWidth: cardBox.width,
@@ -109,8 +119,10 @@ test('keeps the desktop banner legible and the solutions hierarchy contained', a
   expect(layout.imagePosition).toBe('50% 100%');
   expect(layout.bannerHeight).toBeGreaterThanOrEqual(230);
   expect(layout.scrollbarWidth).toBe('auto');
+  expect(layout.customScrollbarSelectors).toEqual([]);
   expect(layout.scrollHeight).toBeLessThanOrEqual(layout.viewportHeight);
   expect(layout.cardWidth).toBeGreaterThanOrEqual(429);
+  expect(layout.cardWidth).toBeLessThanOrEqual(431);
   expect(Math.abs(layout.cardCenter - 720)).toBeLessThanOrEqual(1);
   expect(layout.sectionText).toBe('SOLUÇÕES');
   expect(Math.abs(layout.sectionLeft - layout.armCopyLeft)).toBeLessThanOrEqual(1);
