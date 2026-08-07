@@ -75,6 +75,12 @@ a {
   will-change: transform;
 }
 
+@media (max-width: 480px) {
+  .page-shell {
+    padding-bottom: max(72px, 10svh);
+  }
+}
+
 .profile-hero {
   display: grid;
   width: 100vw;

@@ -87,6 +87,27 @@ test('has no horizontal overflow', async ({ page }) => {
   expect(overflow).toBe(false);
 });
 
+test('keeps the fixed backdrop visible after a real 390px mobile scroll', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'This regression is specific to the 390 by 844 mobile viewport.');
+  await page.goto('/');
+
+  const initial = await page.evaluate(() => ({
+    scrollHeight: document.documentElement.scrollHeight,
+    viewportHeight: window.innerHeight,
+    horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth,
+  }));
+  expect(initial.scrollHeight).toBeGreaterThan(initial.viewportHeight);
+  expect(initial.horizontalOverflow).toBe(false);
+
+  await page.mouse.wheel(0, 240);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+  const backdropPosition = await page.locator('body').evaluate((element) =>
+    getComputedStyle(element, '::before').position,
+  );
+  expect(backdropPosition).toBe('fixed');
+});
+
 test('reduces motion when requested', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'no-js', 'The no-JS project does not run client motion enhancement.');
   await page.emulateMedia({ reducedMotion: 'reduce' });
