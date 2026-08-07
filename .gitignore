@@ -13,9 +13,15 @@ dist/
 playwright-report/
 test-results/
 coverage/
+testsprite_tests/
 
 # TypeScript incremental build data
 *.tsbuildinfo
 
 # Local feature worktrees
 .worktrees/
+testsprite_tests/tmp/
+testsprite_tests/tmp/config.json
+
+.vercel
+.env*
