@@ -58,7 +58,8 @@ test('keeps the Cal dialog usable when its lazy module cannot load', async ({ pa
   await expect(page.locator('[data-cal-status]')).toHaveText(
     'Não foi possível carregar o calendário. Pode abrir o agendamento numa nova página.',
   );
-  await expect.poll(() => pageErrors).toEqual([]);
+  await page.waitForTimeout(100);
+  expect(pageErrors).toEqual([]);
 });
 
 test('closes the Cal dialog when its backdrop is clicked', async ({ page }, testInfo) => {
