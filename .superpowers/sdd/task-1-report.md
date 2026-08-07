@@ -40,3 +40,19 @@ This is the expected RED state: the current production page does not yet provide
 
 - The focused test intentionally remains RED until a later task adds the backdrop and hero banner production implementation.
 - The worktree contains pre-existing untracked files under `docs/superpowers/plans/` and `docs/superpowers/specs/`; they are unrelated and were left untouched.
+
+## Reviewer follow-up
+
+Added the agreed accessibility contract to `tests/e2e/profile.spec.ts`:
+
+```ts
+await expect(page.locator('.profile-hero__banner')).toHaveAttribute('aria-hidden', 'true');
+```
+
+Focused verification command:
+
+```text
+npx playwright test tests/e2e/profile.spec.ts --grep "global illuminated backdrop"
+```
+
+Result: 5 failed (desktop, tablet-768, mobile-390, mobile-320, and no-js). Each failed at the existing backdrop assertion with `Expected substring: "radial-gradient"` and `Received string: "none"`. This confirms the new wrapper assertion is present while the test remains intentionally RED on the currently missing production backdrop.

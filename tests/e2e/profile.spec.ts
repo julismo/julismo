@@ -31,6 +31,7 @@ test('keeps a global illuminated backdrop and a scaled decorative hero banner', 
   });
   expect(backdrop.position).toBe('fixed');
   expect(backdrop.backgroundImage).toContain('radial-gradient');
+  await expect(page.locator('.profile-hero__banner')).toHaveAttribute('aria-hidden', 'true');
   await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('src', '/images/julismo-hero-wave.png');
   await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('alt', '');
   await expect(page.locator('.link-card').first()).toHaveCSS('min-height', '66px');
