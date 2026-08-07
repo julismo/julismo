@@ -11,6 +11,9 @@ const { name, bio, image } = Astro.props;
 ---
 
 <header class="profile-hero">
+  <div class="profile-hero__banner" aria-hidden="true">
+    <img src="/images/julismo-hero-wave.png" alt="" width="1534" height="650" decoding="async" />
+  </div>
   <img
     class="profile-hero__image"
     src={image}
