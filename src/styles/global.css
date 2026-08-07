@@ -16,10 +16,21 @@ body {
   min-height: 100svh;
   margin: 0;
   overflow-x: clip;
-  background: radial-gradient(ellipse 88% 38% at 50% -3%, #3b3b42 0%, #18181b 48%, var(--color-bg) 86%);
+  background: var(--color-bg);
+  scrollbar-color: #8d8d96 #050506;
+  scrollbar-width: thin;
 }
 
 body::before {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background: radial-gradient(ellipse 88% 38% at 50% -3%, #3b3b42 0%, #18181b 48%, var(--color-bg) 86%);
+  content: '';
+  pointer-events: none;
+}
+
+body::after {
   position: fixed;
   z-index: 0;
   top: -100px;
@@ -35,6 +46,20 @@ body::before {
   animation: ambient-shift 9s ease-in-out infinite alternate;
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050506;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid #050506;
+  border-radius: 999px;
+  background: linear-gradient(#bdbdc5, #71717a);
+}
+
 a {
   color: inherit;
 }
@@ -42,9 +67,9 @@ a {
 .page-shell {
   position: relative;
   z-index: 1;
-  width: min(calc(100% - 32px), var(--content-width));
+  width: min(calc(100% - 24px), var(--content-width));
   margin: 0 auto;
-  padding: clamp(34px, 9vw, 52px) 0 30px;
+  padding: 0 0 30px;
   transform: perspective(850px) translate3d(var(--shift-x, 0), var(--shift-y, 0), 0) rotateX(var(--tilt-x, 0)) rotateY(var(--tilt-y, 0));
   transform-origin: center;
   will-change: transform;
@@ -52,16 +77,44 @@ a {
 
 .profile-hero {
   display: grid;
+  width: 100vw;
   justify-items: center;
   gap: 0;
+  margin-left: calc(50% - 50vw);
   margin-bottom: 21px;
   text-align: center;
 }
 
+.profile-hero__banner {
+  position: relative;
+  width: 100vw;
+  height: clamp(178px, 49vw, 210px);
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+}
+
+.profile-hero__banner::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 56%, var(--color-bg));
+  content: '';
+  pointer-events: none;
+}
+
+.profile-hero__banner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .profile-hero__image {
   display: block;
-  width: 78px;
-  height: 78px;
+  position: relative;
+  z-index: 1;
+  width: 94px;
+  height: 94px;
+  margin-top: -47px;
   margin-bottom: 11px;
   border: 1px solid #76767f;
   border-radius: 50%;
@@ -79,7 +132,7 @@ a {
 .profile-hero h1 {
   margin: 0;
   color: var(--color-text);
-  font-size: 1.35rem;
+  font-size: clamp(1.45rem, 5vw, 1.62rem);
   font-weight: 720;
   letter-spacing: -0.045em;
   line-height: 1;
@@ -87,16 +140,17 @@ a {
 
 .verified-rosette {
   display: block;
-  width: 17px;
-  height: 17px;
-  flex: 0 0 17px;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
+  object-fit: contain;
 }
 
 .profile-hero__bio {
   max-width: 31ch;
   margin: 8px auto 0;
   color: #aaabb3;
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   font-weight: 400;
   line-height: 1.42;
 }
@@ -118,7 +172,7 @@ a {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr) auto;
   align-items: center;
-  min-height: 58px;
+  min-height: 66px;
   gap: 11px;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
@@ -155,8 +209,8 @@ a {
 
 .link-card__icon {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   place-items: center;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 14%);
@@ -198,7 +252,7 @@ a {
 
 .link-card__copy strong {
   overflow: hidden;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 650;
   line-height: 1.1;
   text-overflow: ellipsis;
@@ -208,7 +262,7 @@ a {
 .link-card__copy small {
   overflow: hidden;
   color: #9898a2;
-  font-size: 0.67rem;
+  font-size: 0.74rem;
   font-weight: 400;
   line-height: 1.1;
   text-overflow: ellipsis;
@@ -217,7 +271,7 @@ a {
 
 .link-card__arrow {
   color: #a5a5ad;
-  font-size: 1.08rem;
+  font-size: 1.18rem;
   line-height: 1;
 }
 
@@ -292,12 +346,6 @@ a {
   to {
     opacity: 1;
     transform: translateX(calc(-50% + 14px)) scale(1.08);
-  }
-}
-
-@media (min-width: 700px) {
-  .page-shell {
-    padding-top: 62px;
   }
 }
 
