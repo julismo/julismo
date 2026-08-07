@@ -162,10 +162,10 @@ Run:
 ```powershell
 Set-Location 'C:\dev\julismo\.worktrees\profile-personal-only'
 git push --set-upstream origin profile/personal-only
-gh pr create --base main --head profile/personal-only --title 'docs: focus profile on personal developer work' --body '## Summary`n- replaces the public profile README with a concise personal developer presentation`n- removes company and unrelated implementation references from the profile surface`n`n## Validation`n- npm run check`n- npm run test:unit`n- npm run test:e2e'
+gh pr create --draft --base main --head profile/personal-only --title 'docs: focus profile on personal developer work' --body '## Summary`n- replaces the public profile README with a concise personal developer presentation`n- removes company and unrelated implementation references from the profile surface`n`n## Validation`n- npm run check`n- npm run test:unit`n- npm run test:e2e'
 ```
 
-Expected: a pull-request URL whose base is `main`; its description names the exact validation commands.
+Expected: a draft pull-request URL whose base is `main`; its description names the exact validation commands.
 
 - [ ] **Step 5: Verify required pull-request checks, merge, and confirm `main`**
 
@@ -174,6 +174,7 @@ Run:
 ```powershell
 Set-Location 'C:\dev\julismo\.worktrees\profile-personal-only'
 gh pr checks --watch
+gh pr ready
 gh pr merge --merge
 git fetch --prune origin
 git log -1 --oneline origin/main
