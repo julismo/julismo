@@ -38,3 +38,5 @@ Os ficheiros de impressão são gerados localmente, sem um serviço externo:
 - `public/qr/julismo.png`: versão raster de alta resolução.
 
 Todos codificam `https://julismo.vercel.app/`. O QR não expira; continua a funcionar enquanto esse URL estiver em produção.
+
+O QR utiliza módulos arredondados gerados estaticamente e localmente, com uma zona silenciosa protegida para preservar a leitura. Só deve ser regenerado quando o URL de destino mudar.
