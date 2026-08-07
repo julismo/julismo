@@ -23,10 +23,16 @@ Replace the prior silver-wave hero artwork with the new supplied `Banner.png`, t
 - The card itself remains the only interactive element. The visual action is an `aria-hidden` span, avoiding an invalid nested button inside the link while preserving the full-card tap target.
 - Its border, soft dark material, and restrained hover response reuse the existing black-and-silver card system rather than introducing a new colour or animation language.
 
+## Name and verification alignment
+
+- Centre the `Julismo` heading itself on the viewport axis rather than centring the combined heading-and-badge group.
+- Position the decorative verification rosette independently to the heading's right, with a responsive 48 to 52 px offset from the centre axis. It remains noninteractive and retains empty alternative text.
+
 ## Verification
 
 - Playwright first expects the new banner asset and fails while the old asset remains.
 - At 280 px and 390 px effective viewport widths, document `scrollWidth` must not exceed `window.innerWidth`.
 - Each of the five cards exposes one decorative `.link-card__action` with an accessible card-level link label.
+- Playwright verifies that the heading centre is within one CSS pixel of the viewport centre and that the badge starts to the right of the heading.
 - At 390 by 844, the existing real-scroll test stays green and `body::before` remains fixed after wheel scrolling.
 - Inspect 390 by 844 managed-browser screenshots before and after a scroll to judge the banner crop, portrait overlap, illumination, and scrollbar.
