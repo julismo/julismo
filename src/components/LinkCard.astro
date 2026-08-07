@@ -11,7 +11,7 @@ const externalAttributes = link.external
   ? { target: '_blank', rel: 'noopener noreferrer' }
   : {};
 const calAttributes = link.interaction === 'cal-dialog'
-  ? { 'data-cal-trigger': '', 'aria-haspopup': 'dialog', 'aria-controls': 'cal-dialog' }
+  ? ({ 'data-cal-trigger': '', 'aria-haspopup': 'dialog', 'aria-controls': 'cal-dialog' } as const)
   : {};
 ---
 

@@ -1,5 +1,51 @@
 import { expect, test } from '@playwright/test';
 
+test('loads Cal only after intent and restores focus after Escape', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'no-js', 'The no-JS project preserves the new-tab fallback.');
+
+  const calRequests: string[] = [];
+  page.on('request', (request) => {
+    if (/(^|\.)cal\.com\//.test(new URL(request.url()).hostname + '/')) {
+      calRequests.push(request.url());
+    }
+  });
+
+  await page.goto('/');
+  await expect(page.locator('#cal-dialog')).toBeHidden();
+  expect(calRequests).toEqual([]);
+
+  const bookingCard = page.locator('[data-cal-trigger]');
+  await bookingCard.click();
+  const dialog = page.locator('#cal-dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute('open', '');
+  await expect(dialog).toHaveAttribute('aria-labelledby', 'cal-dialog-title');
+  await expect(dialog.getByRole('link', { name: /abrir.*nova página/i })).toHaveAttribute(
+    'href',
+    'https://cal.com/julismo-costa-3nxpms/30min',
+  );
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toHaveAttribute('open', '');
+  await expect(bookingCard).toBeFocused();
+});
+
+test('closes the Cal dialog when its backdrop is clicked', async ({ page }, testInfo) => {
+  test.skip(
+    ['no-js', 'mobile-320', 'mobile-390'].includes(testInfo.project.name),
+    'The no-JS project preserves the fallback and full-screen mobile dialogs have no exposed backdrop.',
+  );
+
+  await page.goto('/');
+  await page.locator('[data-cal-trigger]').click();
+  const dialog = page.locator('#cal-dialog');
+  await expect(dialog).toHaveAttribute('open', '');
+  const panel = await dialog.boundingBox();
+  if (!panel) throw new Error('O diálogo Cal não tem dimensões visíveis.');
+
+  await page.mouse.click(panel.x - 8, panel.y + 8);
+  await expect(dialog).not.toHaveAttribute('open', '');
+});
+
 test('renders the approved identity and six complete action cards', async ({ page }) => {
   await page.goto('/');
 

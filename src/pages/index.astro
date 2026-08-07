@@ -1,5 +1,6 @@
 ---
 import LinkCard from '../components/LinkCard.astro';
+import CalDialog from '../components/CalDialog.astro';
 import ProfileHero from '../components/ProfileHero.astro';
 import { profile } from '../data/profile';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -21,7 +22,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="page-divider" aria-hidden="true"></div>
     <footer class="page-footer">{profile.fullName}</footer>
   </main>
+  <CalDialog />
   <script>
     import '../scripts/motion';
+    import '../scripts/cal-dialog';
   </script>
 </BaseLayout>
