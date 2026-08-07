@@ -1,10 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const emulateSafariOrientationPermission = async (
+const emulateSafariMotionPermissions = async (
   page: Page,
-  permission: 'granted' | 'denied',
+  permissions: { orientation: 'granted' | 'denied'; motion: 'granted' | 'denied' },
 ) => {
   await page.addInitScript((permissionState) => {
+    const requests: string[] = [];
+    Object.defineProperty(window, '__motionPermissionRequests', {
+      configurable: true,
+      value: requests,
+    });
+
     class SafariOrientationEvent extends Event {
       beta: number | null;
       gamma: number | null;
@@ -16,14 +22,42 @@ const emulateSafariOrientationPermission = async (
       }
     }
 
+    class SafariMotionEvent extends Event {
+      acceleration: { x: number | null; y: number | null; z: number | null };
+      accelerationIncludingGravity: { x: number | null; y: number | null; z: number | null };
+      rotationRate: { alpha: number | null; beta: number | null; gamma: number | null };
+      interval: number;
+
+      constructor(type: string) {
+        super(type);
+        this.acceleration = { x: null, y: null, z: null };
+        this.accelerationIncludingGravity = { x: null, y: null, z: null };
+        this.rotationRate = { alpha: null, beta: null, gamma: null };
+        this.interval = 0;
+      }
+    }
+
     Object.defineProperty(SafariOrientationEvent, 'requestPermission', {
-      value: async () => permissionState,
+      value: async () => {
+        requests.push('orientation');
+        return permissionState.orientation;
+      },
+    });
+    Object.defineProperty(SafariMotionEvent, 'requestPermission', {
+      value: async () => {
+        requests.push('motion');
+        return permissionState.motion;
+      },
     });
     Object.defineProperty(window, 'DeviceOrientationEvent', {
       configurable: true,
       value: SafariOrientationEvent,
     });
-  }, permission);
+    Object.defineProperty(window, 'DeviceMotionEvent', {
+      configurable: true,
+      value: SafariMotionEvent,
+    });
+  }, permissions);
 };
 
 test('uses a desktop banner focal point without changing the mobile crop', async ({ page }, testInfo) => {
@@ -282,10 +316,10 @@ test('centres the Julismo heading independently from its verification badge', as
   expect(geometry.badgeLeft).toBeGreaterThan(geometry.headingRight + 6);
 });
 
-test('enables bounded orientation motion after Safari grants permission', async ({ page }, testInfo) => {
+test('Safari grants both motion permissions', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Permission flow is covered once at mobile width.');
 
-  await emulateSafariOrientationPermission(page, 'granted');
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
 
   await page.goto('/');
   const consent = page.getByRole('button', { name: 'Ativar movimento' });
@@ -294,6 +328,9 @@ test('enables bounded orientation motion after Safari grants permission', async 
   await expect(consent).toBeVisible();
   await consent.focus();
   await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() =>
+    (window as typeof window & { __motionPermissionRequests: string[] }).__motionPermissionRequests,
+  )).toEqual(['orientation', 'motion']);
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'active');
   await expect(page.locator('[data-motion-status]')).toHaveText('Movimento ativado.');
   await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
@@ -313,7 +350,7 @@ test('enables bounded orientation motion after Safari grants permission', async 
 test('keeps motion disabled when Safari permission is denied', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Permission flow is covered once at mobile width.');
 
-  await emulateSafariOrientationPermission(page, 'denied');
+  await emulateSafariMotionPermissions(page, { orientation: 'denied', motion: 'denied' });
   await page.goto('/');
 
   const consent = page.getByRole('button', { name: 'Ativar movimento' });
