@@ -10,6 +10,10 @@ type PermissionAwareOrientationEvent = typeof DeviceOrientationEvent & {
   requestPermission?: () => Promise<'granted' | 'denied'>;
 };
 
+type PermissionAwareMotionEvent = typeof DeviceMotionEvent & {
+  requestPermission?: () => Promise<'granted' | 'denied'>;
+};
+
 const root = document.documentElement;
 const plane = document.querySelector<HTMLElement>('[data-profile-plane]');
 const consent = document.querySelector<HTMLButtonElement>('[data-motion-consent]');
@@ -19,6 +23,10 @@ const orientationEvent =
   typeof DeviceOrientationEvent === 'undefined'
     ? undefined
     : (DeviceOrientationEvent as PermissionAwareOrientationEvent);
+const motionEvent =
+  typeof DeviceMotionEvent === 'undefined'
+    ? undefined
+    : (DeviceMotionEvent as PermissionAwareMotionEvent);
 
 const startMotion = () => {
   if (!plane || !orientationEvent) return;
@@ -64,7 +72,7 @@ if (!plane || !orientationEvent) {
   root.dataset.motion = 'static';
 } else if (reducedMotion) {
   root.dataset.motion = 'reduced';
-} else if (orientationEvent.requestPermission) {
+} else if (orientationEvent.requestPermission || motionEvent?.requestPermission) {
   if (!consent) {
     root.dataset.motion = 'static';
   } else {
@@ -87,19 +95,25 @@ if (!plane || !orientationEvent) {
       () => {
         const shouldRestoreFocus = document.activeElement === consent;
         consent.disabled = true;
-        let permissionRequest: Promise<'granted' | 'denied'>;
+        const permissionRequests: Promise<'granted' | 'denied'>[] = [];
 
         try {
-          permissionRequest = orientationEvent.requestPermission!();
+          const request = orientationEvent.requestPermission?.();
+          if (request) permissionRequests.push(request);
         } catch {
-          root.dataset.motion = 'denied';
-          settlePermission('Movimento não ativado.', shouldRestoreFocus);
-          return;
+          permissionRequests.push(Promise.resolve('denied'));
         }
 
-        void permissionRequest
-          .then((permission) => {
-            if (permission === 'granted') {
+        try {
+          const request = motionEvent?.requestPermission?.();
+          if (request) permissionRequests.push(request);
+        } catch {
+          permissionRequests.push(Promise.resolve('denied'));
+        }
+
+        void Promise.all(permissionRequests)
+          .then((permissions) => {
+            if (permissions.every((permission) => permission === 'granted')) {
               startMotion();
               settlePermission('Movimento ativado.', shouldRestoreFocus);
             } else {
