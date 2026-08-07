@@ -20,7 +20,20 @@ test('keeps the full card keyboard-operable', async ({ page }) => {
   await expect(
     page.getByRole('link', { name: /Falar comigo.*WhatsApp.*resposta direta/ }),
   ).toBeFocused();
-  await expect(page.locator('.link-card').first()).toHaveCSS('min-height', '58px');
+  await expect(page.locator('.link-card').first()).toHaveCSS('min-height', '66px');
+});
+
+test('keeps a global illuminated backdrop and a scaled decorative hero banner', async ({ page }) => {
+  await page.goto('/');
+  const backdrop = await page.locator('body').evaluate((element) => {
+    const styles = getComputedStyle(element, '::before');
+    return { backgroundImage: styles.backgroundImage, position: styles.position };
+  });
+  expect(backdrop.position).toBe('fixed');
+  expect(backdrop.backgroundImage).toContain('radial-gradient');
+  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('src', '/images/julismo-hero-wave.png');
+  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('alt', '');
+  await expect(page.locator('.link-card').first()).toHaveCSS('min-height', '66px');
 });
 
 test('keeps all five destinations ordered and secures external navigation', async ({ page }) => {
