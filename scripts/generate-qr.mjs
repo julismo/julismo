@@ -17,12 +17,32 @@ const qrOptions = {
   },
 };
 
+/** @returns {Promise<string>} */
+const renderSvg = () =>
+  new Promise((resolve, reject) => {
+    QRCode.toString(target.href, { ...qrOptions, type: 'svg' }, (error, value) => {
+      if (error) reject(error);
+      else resolve(value);
+    });
+  });
+
+/** @returns {Promise<void>} */
+const writePng = () =>
+  new Promise((resolve, reject) => {
+    QRCode.toFile(
+      `${outputDirectory}/julismo.png`,
+      target.href,
+      { ...qrOptions, type: 'png', width: 1536 },
+      (error) => {
+        if (error) reject(error);
+        else resolve();
+      },
+    );
+  });
+
 await mkdir(outputDirectory, { recursive: true });
 
-const plainSvg = await QRCode.toString(target.href, {
-  ...qrOptions,
-  type: 'svg',
-});
+const plainSvg = await renderSvg();
 
 const viewBox = plainSvg.match(/viewBox="([^"]+)"/)?.[1];
 const innerSvg = plainSvg.match(/<svg[^>]*>([\s\S]*)<\/svg>/)?.[1];
@@ -46,10 +66,6 @@ const cardSvg = `<?xml version="1.0" encoding="UTF-8"?>
 
 await writeFile(`${outputDirectory}/julismo.svg`, plainSvg, 'utf8');
 await writeFile(`${outputDirectory}/julismo-card.svg`, cardSvg, 'utf8');
-await QRCode.toFile(`${outputDirectory}/julismo.png`, target.href, {
-  ...qrOptions,
-  type: 'png',
-  width: 1536,
-});
+await writePng();
 
 console.log(`QR code generated for ${target.href}`);
