@@ -1,5 +1,20 @@
 import { expect, test } from '@playwright/test';
 
+test('uses a desktop banner focal point without changing the mobile crop', async ({ page }, testInfo) => {
+  await page.goto('/');
+  const objectPosition = await page.locator('.profile-hero__banner img').evaluate(
+    (image) => getComputedStyle(image).objectPosition,
+  );
+
+  if (testInfo.project.name === 'desktop' || testInfo.project.name === 'tablet-768') {
+    expect(objectPosition).toBe('50% 76%');
+  }
+
+  if (testInfo.project.name === 'mobile-320' || testInfo.project.name === 'mobile-390' || testInfo.project.name === 'no-js') {
+    expect(objectPosition).toBe('100% 50%');
+  }
+});
+
 test('loads Cal only after intent and restores focus after Escape', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'no-js', 'The no-JS project preserves the new-tab fallback.');
 
