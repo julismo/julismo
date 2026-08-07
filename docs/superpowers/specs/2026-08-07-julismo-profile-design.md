@@ -66,13 +66,13 @@ Links previstos e respetiva prioridade:
 
 | Prioridade | Cartão | Texto auxiliar | Destino |
 | --- | --- | --- | --- |
-| 1 | WhatsApp | Conversar diretamente | URL WhatsApp confirmado antes de publicar |
+| 1 | WhatsApp | Conversar diretamente | `https://api.whatsapp.com/send?phone=351933751885` |
 | 2 | ARM Solutions | IA e automação para PMEs | `https://arm-lda.com/` |
-| 3 | Email | Enviar uma mensagem | endereço confirmado antes de publicar |
-| 4 | GitHub | Projetos e código | perfil GitHub confirmado antes de publicar |
-| 5 | X | Atualizações e ideias | perfil X confirmado antes de publicar |
+| 3 | Email | Enviar uma mensagem | `mailto:julismocosta@gmail.com` |
+| 4 | GitHub | Projetos e código | `https://github.com/julismo` |
+| 5 | X | Atualizações e ideias | `https://x.com/_Julismo` |
 
-Os destinos serão extraídos da página Linktree original ou confirmados pelo Julismo antes da primeira release. Nenhum contacto será inventado.
+Os destinos foram validados na página Linktree original em 7 de agosto de 2026. Nenhum contacto é inventado.
 
 ## 6. Sistema visual aprovado
 
