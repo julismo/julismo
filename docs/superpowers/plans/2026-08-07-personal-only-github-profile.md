@@ -174,12 +174,12 @@ Run:
 ```powershell
 Set-Location 'C:\dev\julismo\.worktrees\profile-personal-only'
 gh pr checks --watch
-gh pr merge --merge --delete-branch
+gh pr merge --merge
 git fetch --prune origin
 git log -1 --oneline origin/main
 ```
 
-Expected: required PR checks pass, the PR is merged to `main`, and `origin/main` contains the README change.
+Expected: required PR checks pass, the PR is merged to `main`, and `origin/main` contains the README change. Keep the local feature branch because this worktree remains needed for account-level verification; delete it only after that work is complete from a safe checkout.
 
 ### Task 3: Apply and verify GitHub account-level profile settings
 
