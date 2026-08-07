@@ -274,6 +274,7 @@ a {
   font-weight: 650;
   letter-spacing: 0.17em;
   text-align: center;
+  text-transform: uppercase;
 }
 
 @keyframes silver-beam {
