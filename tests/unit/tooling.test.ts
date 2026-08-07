@@ -17,3 +17,10 @@ test('Vercel deploys the built Astro output', () => {
   expect(config.buildCommand).toBe('npm run build');
   expect(config.outputDirectory).toBe('dist');
 });
+
+test('browser checks use the managed Chromium channel', () => {
+  const configPath = fileURLToPath(new URL('../../playwright.config.ts', import.meta.url));
+  const config = readFileSync(configPath, 'utf8');
+
+  expect(config).toContain("channel: 'chromium'");
+});

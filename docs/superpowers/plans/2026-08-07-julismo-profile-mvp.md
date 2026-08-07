@@ -217,7 +217,7 @@ import { assertProfileLinks, validateProfileLinks, type ProfileLink } from '../.
 const validLink: ProfileLink = {
   id: 'email',
   title: 'Email',
-  description: 'Enviar uma mensagem',
+  description: 'Escreve-me diretamente',
   href: 'mailto:julismocosta@gmail.com',
   icon: 'email',
   external: false,
@@ -314,11 +314,11 @@ export const profile = {
   bio: 'Simplifico processos que atrasam a equipa, sem trocar o que já funciona.',
   image: '/images/julismo-profile.png',
   links: [
-    { id: 'whatsapp', title: 'WhatsApp', description: 'Conversar diretamente', href: 'https://api.whatsapp.com/send?phone=351933751885', icon: 'whatsapp', external: false, primary: true },
+    { id: 'whatsapp', title: 'Falar comigo', description: 'WhatsApp · resposta direta', href: 'https://api.whatsapp.com/send?phone=351933751885', icon: 'whatsapp', external: false, primary: true },
     { id: 'arm', title: 'ARM Solutions', description: 'IA e automação para PMEs', href: 'https://arm-lda.com/', icon: 'arm', external: true },
-    { id: 'email', title: 'Email', description: 'Enviar uma mensagem', href: 'mailto:julismocosta@gmail.com', icon: 'email', external: false },
-    { id: 'github', title: 'GitHub', description: 'Projetos e código', href: 'https://github.com/julismo', icon: 'github', external: true },
-    { id: 'x', title: 'X', description: 'Atualizações e ideias', href: 'https://x.com/_Julismo', icon: 'x', external: true },
+    { id: 'email', title: 'Email', description: 'Escreve-me diretamente', href: 'mailto:julismocosta@gmail.com', icon: 'email', external: false },
+    { id: 'github', title: 'GitHub', description: 'Código e projetos open source', href: 'https://github.com/julismo', icon: 'github', external: true },
+    { id: 'x', title: 'X', description: 'Ideias e atualizações', href: 'https://x.com/_Julismo', icon: 'x', external: true },
   ] satisfies ProfileLink[],
 } as const;
 
@@ -498,7 +498,7 @@ test('renders the approved identity and five complete action cards', async ({ pa
   await expect(page.getByRole('heading', { level: 1, name: 'Julismo' })).toBeVisible();
   await expect(page.getByText('Simplifico processos que atrasam a equipa, sem trocar o que já funciona.')).toBeVisible();
   await expect(page.getByRole('link')).toHaveCount(5);
-  await expect(page.getByRole('link', { name: /WhatsApp.*Conversar diretamente/ })).toHaveAttribute('href', 'https://api.whatsapp.com/send?phone=351933751885');
+  await expect(page.getByRole('link', { name: /Falar comigo.*WhatsApp.*resposta direta/ })).toHaveAttribute('href', 'https://api.whatsapp.com/send?phone=351933751885');
 });
 ```
 
@@ -768,8 +768,8 @@ Append to `tests/e2e/profile.spec.ts`:
 test('keeps the full card keyboard-operable', async ({ page }) => {
   await page.goto('/');
   await page.keyboard.press('Tab');
-  await expect(page.getByRole('link', { name: /WhatsApp.*Conversar diretamente/ })).toBeFocused();
-  await expect(page.locator('.link-card').first()).toHaveCSS('min-height', '64px');
+  await expect(page.getByRole('link', { name: /Falar comigo.*WhatsApp.*resposta direta/ })).toBeFocused();
+  await expect(page.locator('.link-card').first()).toHaveCSS('min-height', '58px');
 });
 
 test('has no horizontal overflow', async ({ page }) => {

@@ -22,6 +22,7 @@ Em implementação na branch de funcionalidade, com integração prevista em `de
 
 ```powershell
 npm install
+npx playwright install chromium --no-shell
 npm run check
 npm run test
 npm run build

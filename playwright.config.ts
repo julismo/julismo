@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'html' : 'list',
   use: {
     baseURL: 'http://127.0.0.1:4321',
-    channel: 'chrome',
+    channel: 'chromium',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },

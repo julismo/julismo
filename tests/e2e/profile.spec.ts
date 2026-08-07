@@ -23,6 +23,30 @@ test('keeps the full card keyboard-operable', async ({ page }) => {
   await expect(page.locator('.link-card').first()).toHaveCSS('min-height', '58px');
 });
 
+test('keeps all five destinations ordered and secures external navigation', async ({ page }) => {
+  await page.goto('/');
+
+  const expectedLinks = [
+    { id: 'whatsapp', href: 'https://api.whatsapp.com/send?phone=351933751885', external: false },
+    { id: 'arm', href: 'https://arm-lda.com/', external: true },
+    { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
+    { id: 'github', href: 'https://github.com/julismo', external: true },
+    { id: 'x', href: 'https://x.com/_Julismo', external: true },
+  ];
+
+  for (const link of expectedLinks) {
+    const card = page.locator(`[data-link-id="${link.id}"]`);
+    await expect(card).toHaveAttribute('href', link.href);
+
+    if (link.external) {
+      await expect(card).toHaveAttribute('target', '_blank');
+      await expect(card).toHaveAttribute('rel', 'noopener noreferrer');
+    } else {
+      await expect(card).not.toHaveAttribute('target', '_blank');
+    }
+  }
+});
+
 test('has no horizontal overflow', async ({ page }) => {
   await page.goto('/');
 
