@@ -36,7 +36,7 @@
 - Consumes: the approved constraints in `docs/superpowers/specs/2026-08-07-personal-only-github-profile-design.md`.
 - Produces: the exact Markdown rendered by GitHub's profile README surface.
 
-- [ ] **Step 1: Record the current failing content contract**
+- [x] **Step 1: Record the current failing content contract**
 
 Run:
 
@@ -47,7 +47,7 @@ rg -n -i 'ARM|Trion|company|branch|QR code|Verifica' README.md
 
 Expected: matches for ARM, Trion, branch/process material, verification instructions, or QR material; this proves the current README does not meet the approved public-profile scope.
 
-- [ ] **Step 2: Replace `README.md` with the approved minimal public copy**
+- [x] **Step 2: Replace `README.md` with the approved minimal public copy**
 
 Replace the complete file with:
 
@@ -71,7 +71,7 @@ Developer building practical TypeScript applications and reliable AI-assisted wo
 - [Open a GitHub issue](https://github.com/julismo/julismo/issues/new?title=Profile%20contact)
 ```
 
-- [ ] **Step 3: Verify the green content contract**
+- [x] **Step 3: Verify the green content contract**
 
 Run:
 
@@ -86,7 +86,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Required personal profile copy is missing from
 
 Expected: the forbidden search returns no matches; the required-copy search returns four matching lines.
 
-- [ ] **Step 4: Inspect the file diff for scope control**
+- [x] **Step 4: Inspect the file diff for scope control**
 
 Run:
 
@@ -98,7 +98,7 @@ git diff -- README.md
 
 Expected: no whitespace errors; the diff replaces only public-profile README material and contains no site-source changes.
 
-- [ ] **Step 5: Commit the README change**
+- [x] **Step 5: Commit the README change**
 
 Run:
 
@@ -120,7 +120,7 @@ Expected: one commit containing only `README.md` for this task.
 - Consumes: the committed personal README from Task 1.
 - Produces: a merged `main` commit whose README GitHub can render on the profile.
 
-- [ ] **Step 1: Run the static and unit checks**
+- [x] **Step 1: Run the static and unit checks**
 
 Run:
 
@@ -132,7 +132,7 @@ npm run test:unit
 
 Expected: `check` completes with zero errors, warnings, and hints; all unit tests pass.
 
-- [ ] **Step 2: Run browser regression checks**
+- [x] **Step 2: Run browser regression checks**
 
 Run:
 
@@ -143,7 +143,7 @@ npm run test:e2e
 
 Expected: all applicable Playwright tests pass; explicitly report any suite-provided skips separately from failures.
 
-- [ ] **Step 3: Confirm a clean, intentional branch state**
+- [x] **Step 3: Confirm a clean, intentional branch state**
 
 Run:
 
@@ -155,7 +155,7 @@ git log --oneline origin/main..HEAD
 
 Expected: no uncommitted changes and the branch contains the approved design-spec commit plus the README commit.
 
-- [ ] **Step 4: Push the branch and open a pull request to `main`**
+- [x] **Step 4: Push the branch and open a pull request to `main`**
 
 Run:
 
@@ -167,7 +167,7 @@ gh pr create --draft --base main --head profile/personal-only --title 'docs: foc
 
 Expected: a draft pull-request URL whose base is `main`; its description names the exact validation commands.
 
-- [ ] **Step 5: Verify required pull-request checks, merge, and confirm `main`**
+- [x] **Step 5: Verify required pull-request checks, merge, and confirm `main`**
 
 Run:
 
@@ -192,7 +192,7 @@ Expected: required PR checks pass, the PR is merged to `main`, and `origin/main`
 - Consumes: the merged `main` README from Task 2 and a logged-in GitHub session named `github-curation`.
 - Produces: a public profile with an empty company field and exactly one displayed pin.
 
-- [ ] **Step 1: Clear only the account company field through the authenticated GitHub API**
+- [x] **Step 1: Clear only the account company field through the authenticated GitHub API**
 
 Run:
 
@@ -203,7 +203,7 @@ gh api user --jq '{login: .login, bio: .bio, company: .company}'
 
 Expected: the response identifies login `julismo`, retains bio `Building reliable AI-assisted operations software.`, and reports `company` as `null` or an empty value. Do not print authentication configuration or token values.
 
-- [ ] **Step 2: Remove `Trion-Site` from pinned repositories through the authenticated GitHub UI**
+- [x] **Step 2: Remove `Trion-Site` from pinned repositories through the authenticated GitHub UI**
 
 Run:
 
@@ -216,7 +216,7 @@ Use the fresh snapshot references to click **Customize your pins**, uncheck only
 
 Expected: authenticated profile shows one pinned repository, `document-ops-workbench`.
 
-- [ ] **Step 3: Verify the public profile anonymously**
+- [x] **Step 3: Verify the public profile anonymously**
 
 Run:
 
@@ -227,7 +227,7 @@ Run:
 
 Expected: the anonymous page renders the new personal README, has no ARM/Trion/company presentation, and shows only `document-ops-workbench` in the pinned area.
 
-- [ ] **Step 4: Record final local evidence without sensitive output**
+- [x] **Step 4: Record final local evidence without sensitive output**
 
 Run:
 
@@ -244,6 +244,12 @@ Expected: local profile branch remains clean after the merged work and the lates
 - Spec coverage: Task 1 implements the exact README restrictions; Task 2 verifies and merges it; Task 3 clears the company field, retains the required bio, reduces pins to one, and validates the anonymous profile. The Astro site, organizations, credential rotation, repository visibility, and history remain explicitly out of scope.
 - Placeholder scan: every task names its exact files, full replacement copy or commands, expected result, and commit boundary.
 - Interface consistency: Task 1 produces `README.md`; Task 2 merges that exact file to `main`; Task 3 only acts after `origin/main` contains it and verifies GitHub's rendered profile.
+
+## Completion Record
+
+- Completed on 2026-08-07 through [PR #3](https://github.com/julismo/julismo/pull/3), merged as `f3f85716bf777b76dbaaf81a5b1d5805af030925`.
+- The public profile has the approved personal README, the original account bio, no company field, and one pin: `document-ops-workbench`.
+- Final review found no Critical or Important issues.
 
 ## Execution Handoff
 
