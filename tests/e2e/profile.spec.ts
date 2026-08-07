@@ -324,6 +324,9 @@ test('Safari grants both motion permissions', async ({ page }, testInfo) => {
   await page.goto('/');
   const consent = page.getByRole('button', { name: 'Ativar movimento' });
 
+  await expect.poll(() => page.evaluate(() =>
+    (window as typeof window & { __motionPermissionRequests: string[] }).__motionPermissionRequests,
+  )).toEqual([]);
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'permission-required');
   await expect(consent).toBeVisible();
   await consent.focus();
@@ -350,13 +353,12 @@ test('Safari grants both motion permissions', async ({ page }, testInfo) => {
 test('keeps motion disabled when Safari permission is denied', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Permission flow is covered once at mobile width.');
 
-  await emulateSafariMotionPermissions(page, { orientation: 'denied', motion: 'denied' });
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'denied' });
   await page.goto('/');
 
   const consent = page.getByRole('button', { name: 'Ativar movimento' });
   await expect(consent).toBeVisible();
-  await consent.focus();
-  await page.keyboard.press('Enter');
+  await consent.click();
 
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'denied');
   await expect(consent).toBeHidden();
