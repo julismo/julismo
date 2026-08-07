@@ -25,15 +25,34 @@ test('keeps the full card keyboard-operable', async ({ page }) => {
 
 test('keeps a global illuminated backdrop and a scaled decorative hero banner', async ({ page }) => {
   await page.goto('/');
+  await expect(page.locator('.profile-hero__banner')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('src', '/images/julismo-hero-wave.png');
+  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('alt', '');
+  const overlap = await page.locator('.profile-hero').evaluate((hero) => {
+    const banner = hero.querySelector('.profile-hero__banner')!.getBoundingClientRect();
+    const portrait = hero.querySelector('.profile-hero__image')!.getBoundingClientRect();
+    const portraitCenter = portrait.left + portrait.width / 2;
+    const bannerCenter = banner.left + banner.width / 2;
+    return (
+      Math.abs(portraitCenter - bannerCenter) < 1 &&
+      portrait.top < banner.bottom &&
+      portrait.bottom > banner.bottom
+    );
+  });
+
+  expect(overlap).toBe(true);
+  await expect(page.locator('img.verified-rosette')).toHaveAttribute(
+    'src',
+    '/images/julismo-verified-rosette-rounded.png',
+  );
+  await expect(page.locator('img.verified-rosette')).toHaveAttribute('alt', '');
+  await expect(page.locator('img.verified-rosette')).toHaveAttribute('aria-hidden', 'true');
   const backdrop = await page.locator('body').evaluate((element) => {
     const styles = getComputedStyle(element, '::before');
     return { backgroundImage: styles.backgroundImage, position: styles.position };
   });
   expect(backdrop.position).toBe('fixed');
   expect(backdrop.backgroundImage).toContain('radial-gradient');
-  await expect(page.locator('.profile-hero__banner')).toHaveAttribute('aria-hidden', 'true');
-  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('src', '/images/julismo-hero-wave.png');
-  await expect(page.locator('.profile-hero__banner img')).toHaveAttribute('alt', '');
   await expect(page.locator('.link-card').first()).toHaveCSS('min-height', '66px');
 });
 
