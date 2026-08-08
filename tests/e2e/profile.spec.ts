@@ -28,10 +28,19 @@ const emulateSafariMotionPermissions = async (
       rotationRate: { alpha: number | null; beta: number | null; gamma: number | null };
       interval: number;
 
-      constructor(type: string) {
+      constructor(
+        type: string,
+        init: {
+          accelerationIncludingGravity?: { x?: number | null; y?: number | null; z?: number | null };
+        } = {},
+      ) {
         super(type);
         this.acceleration = { x: null, y: null, z: null };
-        this.accelerationIncludingGravity = { x: null, y: null, z: null };
+        this.accelerationIncludingGravity = {
+          x: init.accelerationIncludingGravity?.x ?? null,
+          y: init.accelerationIncludingGravity?.y ?? null,
+          z: init.accelerationIncludingGravity?.z ?? null,
+        };
         this.rotationRate = { alpha: null, beta: null, gamma: null };
         this.interval = 0;
       }
@@ -394,7 +403,7 @@ test('centres the Julismo heading independently from its verification badge', as
   expect(geometry.badgeLeft).toBeGreaterThan(geometry.headingRight + 6);
 });
 
-test('Safari grants both motion permissions', async ({ page }, testInfo) => {
+test('Safari waits for an orientation sample before marking motion active', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Permission flow is covered once at mobile width.');
 
   await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
@@ -412,9 +421,7 @@ test('Safari grants both motion permissions', async ({ page }, testInfo) => {
   await expect.poll(() => page.evaluate(() =>
     (window as typeof window & { __motionPermissionRequests: string[] }).__motionPermissionRequests,
   )).toEqual(['orientation', 'motion']);
-  await expect(page.locator('html')).toHaveAttribute('data-motion', 'active');
-  await expect(page.locator('[data-motion-status]')).toHaveText('Movimento ativado.');
-  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'waiting');
 
   await page.evaluate(() => {
     const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
@@ -426,6 +433,37 @@ test('Safari grants both motion permissions', async ({ page }, testInfo) => {
     const tilt = Number.parseFloat(plane.style.getPropertyValue('--tilt-x'));
     return Number.isFinite(tilt) && tilt !== 0;
   })).toBe(true);
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'active');
+  await expect(page.locator('[data-motion-status]')).toHaveText('Movimento ativado.');
+  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
+});
+
+test('uses acceleration samples when iPhone does not emit orientation events', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Sensor fallback is covered once at mobile width.');
+
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Ativar movimento' }).click();
+
+  await page.evaluate(() => {
+    const MotionEvent = window.DeviceMotionEvent as typeof DeviceMotionEvent;
+    window.dispatchEvent(
+      new MotionEvent('devicemotion', {
+        accelerationIncludingGravity: { x: 0, y: 0, z: 9.81 },
+      }),
+    );
+    window.dispatchEvent(
+      new MotionEvent('devicemotion', {
+        accelerationIncludingGravity: { x: 6, y: -4, z: 6 },
+      }),
+    );
+  });
+
+  await expect.poll(() => page.locator('[data-profile-plane]').evaluate((plane) => {
+    const tilt = Number.parseFloat(plane.style.getPropertyValue('--tilt-x'));
+    return Number.isFinite(tilt) && tilt !== 0;
+  })).toBe(true);
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'active');
 });
 
 test('keeps motion disabled when Safari permission is denied', async ({ page }, testInfo) => {

@@ -1,5 +1,6 @@
 import {
   calibrate,
+  motionSampleFromAccelerationIncludingGravity,
   smoothTilt,
   targetTilt,
   type MotionSample,
@@ -28,12 +29,20 @@ const motionEvent =
     ? undefined
     : (DeviceMotionEvent as PermissionAwareMotionEvent);
 
-const startMotion = () => {
-  if (!plane || !orientationEvent) return;
+const restorePrimaryActionFocus = () => {
+  window.requestAnimationFrame(() => {
+    document.querySelector<HTMLElement>('[data-link-id="whatsapp"]')?.focus();
+  });
+};
+
+const startMotion = (onFirstSample: () => void) => {
+  if (!plane || (!orientationEvent && !motionEvent)) return;
 
   let baseline: MotionSample | null = null;
   let current: Tilt = { rotateX: 0, rotateY: 0, translateX: 0, translateY: 0 };
   let frame = 0;
+  let source: 'orientation' | 'acceleration' | null = null;
+  let receivedSample = false;
 
   const render = () => {
     frame = 0;
@@ -43,20 +52,43 @@ const startMotion = () => {
     plane.style.setProperty('--shift-y', `${current.translateY}px`);
   };
 
-  window.addEventListener(
-    'deviceorientation',
-    (event) => {
-      if (document.hidden || event.beta === null || event.gamma === null) return;
+  const consumeSample = (sample: MotionSample, nextSource: 'orientation' | 'acceleration') => {
+    if (document.hidden || (source && source !== nextSource)) return;
 
-      const sample = { beta: event.beta, gamma: event.gamma };
-      baseline ??= calibrate(sample);
-      if (!baseline) return;
+    source ??= nextSource;
+    baseline ??= calibrate(sample);
+    if (!baseline) return;
 
-      current = smoothTilt(current, targetTilt(sample, baseline));
-      if (!frame) frame = window.requestAnimationFrame(render);
-    },
-    { passive: true },
-  );
+    current = smoothTilt(current, targetTilt(sample, baseline));
+    if (!frame) frame = window.requestAnimationFrame(render);
+
+    if (!receivedSample) {
+      receivedSample = true;
+      onFirstSample();
+    }
+  };
+
+  if (orientationEvent) {
+    window.addEventListener(
+      'deviceorientation',
+      (event) => {
+        if (event.beta === null || event.gamma === null) return;
+        consumeSample({ beta: event.beta, gamma: event.gamma }, 'orientation');
+      },
+      { passive: true },
+    );
+  }
+
+  if (motionEvent) {
+    window.addEventListener(
+      'devicemotion',
+      (event) => {
+        const sample = motionSampleFromAccelerationIncludingGravity(event.accelerationIncludingGravity);
+        if (sample) consumeSample(sample, 'acceleration');
+      },
+      { passive: true },
+    );
+  }
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && frame) {
@@ -64,29 +96,37 @@ const startMotion = () => {
       frame = 0;
     }
   });
-
-  root.dataset.motion = 'active';
 };
 
-if (!plane || !orientationEvent) {
+const activateMotion = (shouldRestoreFocus = false) => {
+  root.dataset.motion = 'waiting';
+  if (status) status.textContent = 'A preparar movimento.';
+
+  startMotion(() => {
+    root.dataset.motion = 'active';
+    if (consent) consent.hidden = true;
+    if (status) status.textContent = 'Movimento ativado.';
+    if (shouldRestoreFocus) restorePrimaryActionFocus();
+  });
+};
+
+if (!plane || (!orientationEvent && !motionEvent)) {
   root.dataset.motion = 'static';
 } else if (reducedMotion) {
   root.dataset.motion = 'reduced';
-} else if (orientationEvent.requestPermission || motionEvent?.requestPermission) {
+} else if (orientationEvent?.requestPermission || motionEvent?.requestPermission) {
   if (!consent) {
     root.dataset.motion = 'static';
   } else {
     root.dataset.motion = 'permission-required';
     consent.hidden = false;
 
-    const settlePermission = (message: string, shouldRestoreFocus: boolean) => {
+    const settleDeniedPermission = (shouldRestoreFocus: boolean) => {
       consent.hidden = true;
-      if (status) status.textContent = message;
+      if (status) status.textContent = 'Movimento não ativado.';
 
       if (shouldRestoreFocus) {
-        window.requestAnimationFrame(() => {
-          document.querySelector<HTMLElement>('[data-link-id="whatsapp"]')?.focus();
-        });
+        restorePrimaryActionFocus();
       }
     };
 
@@ -98,7 +138,7 @@ if (!plane || !orientationEvent) {
         const permissionRequests: Promise<'granted' | 'denied'>[] = [];
 
         try {
-          const request = orientationEvent.requestPermission?.();
+          const request = orientationEvent?.requestPermission?.();
           if (request) permissionRequests.push(request);
         } catch {
           permissionRequests.push(Promise.resolve('denied'));
@@ -114,21 +154,21 @@ if (!plane || !orientationEvent) {
         void Promise.all(permissionRequests)
           .then((permissions) => {
             if (permissions.every((permission) => permission === 'granted')) {
-              startMotion();
-              settlePermission('Movimento ativado.', shouldRestoreFocus);
+              consent.textContent = 'Mova o telemóvel…';
+              activateMotion(shouldRestoreFocus);
             } else {
               root.dataset.motion = 'denied';
-              settlePermission('Movimento não ativado.', shouldRestoreFocus);
+              settleDeniedPermission(shouldRestoreFocus);
             }
           })
           .catch(() => {
             root.dataset.motion = 'denied';
-            settlePermission('Movimento não ativado.', shouldRestoreFocus);
+            settleDeniedPermission(shouldRestoreFocus);
           });
       },
       { once: true },
     );
   }
 } else {
-  startMotion();
+  activateMotion();
 }

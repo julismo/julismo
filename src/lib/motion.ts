@@ -3,6 +3,12 @@ export interface MotionSample {
   gamma: number;
 }
 
+export interface AccelerationIncludingGravity {
+  x: number | null;
+  y: number | null;
+  z: number | null;
+}
+
 export interface Tilt {
   rotateX: number;
   rotateY: number;
@@ -28,6 +34,24 @@ const clamp = (value: number, limit: number): number => Math.max(-limit, Math.mi
 
 export function calibrate(sample: MotionSample): MotionSample | null {
   return Number.isFinite(sample.beta) && Number.isFinite(sample.gamma) ? sample : null;
+}
+
+export function motionSampleFromAccelerationIncludingGravity(
+  acceleration: AccelerationIncludingGravity | null,
+): MotionSample | null {
+  if (!acceleration) return null;
+
+  const { x, y, z } = acceleration;
+  if (x === null || y === null || z === null || !Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
+    return null;
+  }
+
+  if (Math.hypot(x, y, z) < 0.001) return null;
+
+  return {
+    beta: (Math.atan2(y, Math.hypot(x, z)) * 180) / Math.PI,
+    gamma: (Math.atan2(-x, Math.hypot(y, z)) * 180) / Math.PI,
+  };
 }
 
 export function targetTilt(sample: MotionSample, baseline: MotionSample): Tilt {
