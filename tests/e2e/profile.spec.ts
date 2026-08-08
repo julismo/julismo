@@ -239,6 +239,30 @@ test('renders the approved identity and six complete action cards', async ({ pag
   ).toHaveAttribute('href', 'https://api.whatsapp.com/send?phone=351933751885');
 });
 
+test('groups business solutions and digital presence without interrupting contacts', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.link-list > *')).toHaveCount(8);
+
+  const sequence = await page.locator('.link-list > *').evaluateAll((items) =>
+    items.map((item) =>
+      item.classList.contains('link-section-label')
+        ? `label:${item.textContent?.trim()}`
+        : `link:${item.getAttribute('data-link-id')}`,
+    ),
+  );
+
+  expect(sequence).toEqual([
+    'link:whatsapp',
+    'link:cal',
+    'label:SOLUÇÕES',
+    'link:arm',
+    'link:email',
+    'label:PRESENÇA',
+    'link:github',
+    'link:x',
+  ]);
+});
+
 test('keeps the full card keyboard-operable', async ({ page }) => {
   await page.goto('/');
 

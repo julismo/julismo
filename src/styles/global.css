@@ -126,7 +126,7 @@ a {
 @media (min-width: 768px) {
   .page-shell {
     width: min(calc(100% - 48px), 430px);
-    padding-bottom: 10px;
+    padding-bottom: 2px;
   }
 
   .profile-hero__banner {
@@ -254,6 +254,16 @@ a {
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.16em;
+}
+
+@media (min-width: 768px) {
+  .link-list {
+    gap: 4px;
+  }
+
+  .link-section-label {
+    margin: 2px 0 -3px 58px;
+  }
 }
 
 .link-card {
@@ -605,5 +615,11 @@ a {
 
   .link-card--primary::before {
     animation: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .page-divider {
+    margin: 14px 0 10px;
   }
 }
