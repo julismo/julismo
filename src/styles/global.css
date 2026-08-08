@@ -159,7 +159,7 @@ a {
 .profile-hero__name-row {
   display: grid;
   position: relative;
-  width: 100%;
+  width: fit-content;
   place-items: center;
 }
 
@@ -176,7 +176,7 @@ a {
   display: block;
   position: absolute;
   top: 50%;
-  left: calc(50% + clamp(48px, 12.5vw, 52px));
+  left: calc(100% + 6px);
   width: 21px;
   height: 21px;
   object-fit: contain;

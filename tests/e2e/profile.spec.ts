@@ -416,8 +416,11 @@ test('keeps the fixed backdrop visible after a real 390px mobile scroll', async 
   expect(backdropPosition).toBe('fixed');
 });
 
-test('centres the Julismo heading independently from its verification badge', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'mobile-390', 'This composition is calibrated at the primary mobile viewport.');
+test('keeps the verification seal closely aligned', async ({ page }, testInfo) => {
+  test.skip(
+    !['mobile-390', 'desktop'].includes(testInfo.project.name),
+    'The badge alignment is calibrated at the primary mobile and desktop viewports.',
+  );
   await page.goto('/');
 
   const geometry = await page.locator('.profile-hero').evaluate((hero) => {
@@ -426,13 +429,17 @@ test('centres the Julismo heading independently from its verification badge', as
     return {
       headingCenter: heading.left + heading.width / 2,
       viewportCenter: window.innerWidth / 2,
-      headingRight: heading.right,
-      badgeLeft: badge.left,
+      badgeGap: badge.left - heading.right,
+      verticalDelta: Math.abs(
+        badge.top + badge.height / 2 - (heading.top + heading.height / 2),
+      ),
     };
   });
 
   expect(Math.abs(geometry.headingCenter - geometry.viewportCenter)).toBeLessThanOrEqual(1);
-  expect(geometry.badgeLeft).toBeGreaterThan(geometry.headingRight + 6);
+  expect(geometry.badgeGap).toBeGreaterThanOrEqual(5.5);
+  expect(geometry.badgeGap).toBeLessThanOrEqual(6.5);
+  expect(geometry.verticalDelta).toBeLessThanOrEqual(1);
 });
 
 test('Safari waits for an orientation sample before marking motion active', async ({ page }, testInfo) => {
