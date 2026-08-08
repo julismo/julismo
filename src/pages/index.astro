@@ -4,16 +4,23 @@ import CalDialog from '../components/CalDialog.astro';
 import ProfileHero from '../components/ProfileHero.astro';
 import { profile } from '../data/profile';
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const sectionLabels = {
+  solutions: 'SOLU\u00c7\u00d5ES',
+  presence: 'PRESEN\u00c7A',
+} as const;
 ---
 
-<BaseLayout title="Julismo — Processos mais simples" description={profile.bio}>
+<BaseLayout title={'Julismo \u2014 Processos mais simples'} description={profile.bio}>
   <main class="page-shell" data-profile-plane>
     <ProfileHero name={profile.name} bio={profile.bio} image={profile.image} />
-    <nav class="link-list" aria-label="Contactos e presença digital">
+    <nav class="link-list" aria-label="Contactos e presen&#231;a digital">
       {
-        profile.links.map((link) => (
+        profile.links.map((link, index) => (
           <>
-            {link.section === 'work' && <span class="link-section-label">SOLUÇÕES</span>}
+            {link.section in sectionLabels && profile.links[index - 1]?.section !== link.section && (
+              <span class="link-section-label">{sectionLabels[link.section as keyof typeof sectionLabels]}</span>
+            )}
             <LinkCard link={link} />
           </>
         ))

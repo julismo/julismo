@@ -8,7 +8,7 @@ export interface ProfileLink {
   description: string;
   href: string;
   icon: IconName;
-  section: 'contact' | 'work';
+  section: 'contact' | 'solutions' | 'presence';
   external: boolean;
   primary?: boolean;
   interaction?: 'cal-dialog';

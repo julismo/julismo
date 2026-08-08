@@ -22,10 +22,10 @@ describe('profile link contract', () => {
     expect(profile.links.map(({ id, title, description, section }) => ({ id, title, description, section }))).toEqual([
       { id: 'whatsapp', title: 'Falar comigo', description: 'WhatsApp · resposta direta', section: 'contact' },
       { id: 'cal', title: 'Agendar diagnóstico', description: '30 min · escolha o melhor horário', section: 'contact' },
-      { id: 'arm', title: 'ARM Solutions', description: 'IA e automação para PMEs', section: 'work' },
+      { id: 'arm', title: 'ARM Solutions', description: 'IA e automação para PMEs', section: 'solutions' },
       { id: 'email', title: 'Email', description: 'Escreve-me diretamente', section: 'contact' },
-      { id: 'github', title: 'GitHub', description: 'Código e projetos open source', section: 'contact' },
-      { id: 'x', title: 'X', description: 'Ideias e atualizações', section: 'contact' },
+      { id: 'github', title: 'GitHub', description: 'Código e projetos open source', section: 'presence' },
+      { id: 'x', title: 'X', description: 'Ideias e atualizações', section: 'presence' },
     ]);
   });
 

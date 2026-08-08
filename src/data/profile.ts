@@ -34,7 +34,7 @@ export const profile = {
       description: 'IA e automação para PMEs',
       href: 'https://arm-lda.com/',
       icon: 'arm',
-      section: 'work',
+      section: 'solutions',
       external: true,
     },
     {
@@ -52,7 +52,7 @@ export const profile = {
       description: 'Código e projetos open source',
       href: 'https://github.com/julismo',
       icon: 'github',
-      section: 'contact',
+      section: 'presence',
       external: true,
     },
     {
@@ -61,7 +61,7 @@ export const profile = {
       description: 'Ideias e atualizações',
       href: 'https://x.com/_Julismo',
       icon: 'x',
-      section: 'contact',
+      section: 'presence',
       external: true,
     },
   ] satisfies ProfileLink[],
