@@ -25,7 +25,7 @@ describe('profile link contract', () => {
       { id: 'arm', title: 'ARM Solutions', description: 'IA e automação para PMEs', section: 'solutions' },
       { id: 'email', title: 'Email', description: 'Escreve-me diretamente', section: 'contact' },
       { id: 'github', title: 'GitHub', description: 'Código e projetos open source', section: 'presence' },
-      { id: 'x', title: 'X', description: 'Ideias e atualizações', section: 'presence' },
+      { id: 'linkedin', title: 'LinkedIn', description: 'Perfil profissional', section: 'presence' },
     ]);
   });
 
@@ -36,7 +36,7 @@ describe('profile link contract', () => {
       { id: 'arm', href: 'https://arm-lda.com/', external: true },
       { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
       { id: 'github', href: 'https://github.com/julismo', external: true },
-      { id: 'x', href: 'https://x.com/_Julismo', external: true },
+      { id: 'linkedin', href: 'https://www.linkedin.com/in/julismocosta/', external: true },
     ]);
   });
 

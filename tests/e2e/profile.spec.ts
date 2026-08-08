@@ -259,7 +259,7 @@ test('groups business solutions and digital presence without interrupting contac
     'link:email',
     'label:PRESENÇA',
     'link:github',
-    'link:x',
+    'link:linkedin',
   ]);
 });
 
@@ -342,7 +342,7 @@ test('keeps all six destinations ordered and secures external navigation', async
     { id: 'arm', href: 'https://arm-lda.com/', external: true },
     { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
     { id: 'github', href: 'https://github.com/julismo', external: true },
-    { id: 'x', href: 'https://x.com/_Julismo', external: true },
+    { id: 'linkedin', href: 'https://www.linkedin.com/in/julismocosta/', external: true },
   ];
 
   for (const link of expectedLinks) {
