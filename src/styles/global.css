@@ -412,22 +412,6 @@ a {
 }
 
 
-.page-divider {
-  height: 1px;
-  margin: 17px 0 12px;
-  background: linear-gradient(90deg, transparent, #36363d, transparent);
-}
-
-.page-footer {
-  margin: 0;
-  color: #7c7c85;
-  font-size: 0.65rem;
-  font-weight: 650;
-  letter-spacing: 0.17em;
-  text-align: center;
-  text-transform: uppercase;
-}
-
 @keyframes silver-beam {
   to {
     transform: translate(-50%, -50%) rotate(360deg);
@@ -610,11 +594,5 @@ a {
 
   .link-card--primary::before {
     animation: none;
-  }
-}
-
-@media (min-width: 768px) {
-  .page-divider {
-    margin: 14px 0 10px;
   }
 }

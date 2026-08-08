@@ -263,6 +263,14 @@ test('groups business solutions and digital presence without interrupting contac
   ]);
 });
 
+test('ends cleanly without a name sign-off', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.locator('.page-footer')).toHaveCount(0);
+  await expect(page.locator('.page-divider')).toHaveCount(0);
+  await expect(page.getByText('Julismo Costa', { exact: true })).toHaveCount(0);
+});
+
 test('keeps the full card keyboard-operable', async ({ page }) => {
   await page.goto('/');
 
