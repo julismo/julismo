@@ -41,3 +41,9 @@ Plan: `docs/superpowers/plans/2026-08-07-cal-dialog-and-desktop-banner.md`
 - Task 1: complete (commits 7367477..8475e0e, review clean)
 - Task 2: complete (commits 8475e0e..78e2835, review approved; minor: rejected Cal initialisation promise is not consumed, causing an unhandled rejection if the third-party embed fails)
 - Task 3: complete (commits 78e2835..HEAD; desktop crop `50% 76%`, mobile/no-JS crop `100% 50%`, visual evidence inspected)
+
+## Link section hierarchy
+
+Plan: `docs/superpowers/plans/2026-08-08-link-section-hierarchy.md`
+
+- Task 1: complete (commits 350b8eb..b2adaba, review clean; minor: task report filename covers the desktop-spacing follow-up and plan does not state that spacing exception explicitly)
