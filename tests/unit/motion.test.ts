@@ -1,9 +1,48 @@
 import { describe, expect, test } from 'vitest';
-import { calibrate, MOTION_LIMITS, smoothTilt, targetTilt } from '../../src/lib/motion';
+import {
+  calibrate,
+  motionSampleFromAccelerationIncludingGravity,
+  MOTION_LIMITS,
+  smoothTilt,
+  targetTilt,
+} from '../../src/lib/motion';
 
 describe('motion limits', () => {
   test('calibrates the first finite orientation sample', () => {
     expect(calibrate({ beta: 8, gamma: -4 })).toEqual({ beta: 8, gamma: -4 });
+  });
+
+  test('derives a finite tilt sample from acceleration including gravity', () => {
+    const flat = motionSampleFromAccelerationIncludingGravity({
+      x: 0,
+      y: 0,
+      z: 9.81,
+    });
+    expect(flat?.beta).toBeCloseTo(0);
+    expect(flat?.gamma).toBeCloseTo(0);
+
+    const frontToBack = motionSampleFromAccelerationIncludingGravity({
+      x: 0,
+      y: 6,
+      z: 6,
+    });
+    expect(frontToBack?.beta).toBeGreaterThan(0);
+    expect(frontToBack?.gamma).toBeCloseTo(0);
+
+    const leftToRight = motionSampleFromAccelerationIncludingGravity({
+      x: -6,
+      y: 0,
+      z: 6,
+    });
+    expect(leftToRight?.beta).toBeCloseTo(0);
+    expect(leftToRight?.gamma).toBeGreaterThan(0);
+    expect(
+      motionSampleFromAccelerationIncludingGravity({
+        x: null,
+        y: 0,
+        z: 9.81,
+      }),
+    ).toBeNull();
   });
 
   test('ignores the dead zone and clamps extreme motion', () => {

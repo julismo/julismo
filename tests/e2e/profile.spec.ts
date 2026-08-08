@@ -28,10 +28,19 @@ const emulateSafariMotionPermissions = async (
       rotationRate: { alpha: number | null; beta: number | null; gamma: number | null };
       interval: number;
 
-      constructor(type: string) {
+      constructor(
+        type: string,
+        init: {
+          accelerationIncludingGravity?: { x?: number | null; y?: number | null; z?: number | null };
+        } = {},
+      ) {
         super(type);
         this.acceleration = { x: null, y: null, z: null };
-        this.accelerationIncludingGravity = { x: null, y: null, z: null };
+        this.accelerationIncludingGravity = {
+          x: init.accelerationIncludingGravity?.x ?? null,
+          y: init.accelerationIncludingGravity?.y ?? null,
+          z: init.accelerationIncludingGravity?.z ?? null,
+        };
         this.rotationRate = { alpha: null, beta: null, gamma: null };
         this.interval = 0;
       }
@@ -67,12 +76,90 @@ test('uses a desktop banner focal point without changing the mobile crop', async
   );
 
   if (testInfo.project.name === 'desktop' || testInfo.project.name === 'tablet-768') {
-    expect(objectPosition).toBe('50% 76%');
+    expect(objectPosition).toBe('50% 100%');
   }
 
   if (testInfo.project.name === 'mobile-320' || testInfo.project.name === 'mobile-390' || testInfo.project.name === 'no-js') {
     expect(objectPosition).toBe('100% 50%');
   }
+});
+
+test('keeps the desktop banner legible and the solutions hierarchy contained', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Desktop composition is calibrated once at 1440 by 900.');
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const layout = await page.locator('body').evaluate((body) => {
+    const banner = document.querySelector<HTMLElement>('.profile-hero__banner')!;
+    const image = banner.querySelector('img')!;
+    const card = document.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+    const section = document.querySelector<HTMLElement>('.link-section-label')!;
+    const armCopy = document.querySelector<HTMLElement>('[data-link-id="arm"] .link-card__copy')!;
+    const cardBox = card.getBoundingClientRect();
+    const sectionBox = section.getBoundingClientRect();
+    const armCopyBox = armCopy.getBoundingClientRect();
+    const customScrollbarSelectors = Array.from(document.styleSheets).flatMap((sheet) => {
+      try {
+        return Array.from(sheet.cssRules)
+          .map((rule) => ('selectorText' in rule ? (rule as CSSStyleRule).selectorText : ''))
+          .filter((selector) => selector.includes('::-webkit-scrollbar'));
+      } catch {
+        return [];
+      }
+    });
+
+    return {
+      bannerHeight: banner.getBoundingClientRect().height,
+      imagePosition: getComputedStyle(image).objectPosition,
+      scrollbarWidth: getComputedStyle(body).scrollbarWidth,
+      customScrollbarSelectors,
+      scrollHeight: document.documentElement.scrollHeight,
+      viewportHeight: window.innerHeight,
+      cardWidth: cardBox.width,
+      cardCenter: cardBox.left + cardBox.width / 2,
+      sectionText: section.textContent?.trim(),
+      sectionLeft: sectionBox.left,
+      armCopyLeft: armCopyBox.left,
+      horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth,
+    };
+  });
+
+  expect(layout.imagePosition).toBe('50% 100%');
+  expect(layout.bannerHeight).toBeGreaterThanOrEqual(230);
+  expect(layout.scrollbarWidth).toBe('auto');
+  expect(layout.customScrollbarSelectors).toEqual([]);
+  expect(layout.scrollHeight).toBeLessThanOrEqual(layout.viewportHeight);
+  expect(layout.cardWidth).toBeGreaterThanOrEqual(429);
+  expect(layout.cardWidth).toBeLessThanOrEqual(431);
+  expect(Math.abs(layout.cardCenter - 720)).toBeLessThanOrEqual(1);
+  expect(layout.sectionText).toBe('SOLUÇÕES');
+  expect(Math.abs(layout.sectionLeft - layout.armCopyLeft)).toBeLessThanOrEqual(1);
+  expect(layout.horizontalOverflow).toBe(false);
+});
+
+test('keeps cards nearly full width within mobile safe gutters', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Safe touch gutters are calibrated at the primary mobile viewport.');
+
+  await page.goto('/');
+
+  const geometry = await page.locator('[data-link-id="whatsapp"]').evaluate((card) => {
+    const box = card.getBoundingClientRect();
+    return {
+      left: box.left,
+      right: box.right,
+      width: box.width,
+      viewportWidth: window.innerWidth,
+      horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth,
+    };
+  });
+
+  expect(geometry.left).toBeGreaterThanOrEqual(12);
+  expect(geometry.left).toBeLessThanOrEqual(16);
+  expect(geometry.viewportWidth - geometry.right).toBeGreaterThanOrEqual(12);
+  expect(geometry.viewportWidth - geometry.right).toBeLessThanOrEqual(16);
+  expect(geometry.width).toBeGreaterThanOrEqual(geometry.viewportWidth - 32);
+  expect(geometry.horizontalOverflow).toBe(false);
 });
 
 test('loads Cal only after intent and restores focus after Escape', async ({ page }, testInfo) => {
@@ -316,7 +403,7 @@ test('centres the Julismo heading independently from its verification badge', as
   expect(geometry.badgeLeft).toBeGreaterThan(geometry.headingRight + 6);
 });
 
-test('Safari grants both motion permissions', async ({ page }, testInfo) => {
+test('Safari waits for an orientation sample before marking motion active', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Permission flow is covered once at mobile width.');
 
   await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
@@ -334,9 +421,7 @@ test('Safari grants both motion permissions', async ({ page }, testInfo) => {
   await expect.poll(() => page.evaluate(() =>
     (window as typeof window & { __motionPermissionRequests: string[] }).__motionPermissionRequests,
   )).toEqual(['orientation', 'motion']);
-  await expect(page.locator('html')).toHaveAttribute('data-motion', 'active');
-  await expect(page.locator('[data-motion-status]')).toHaveText('Movimento ativado.');
-  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'waiting');
 
   await page.evaluate(() => {
     const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
@@ -348,6 +433,37 @@ test('Safari grants both motion permissions', async ({ page }, testInfo) => {
     const tilt = Number.parseFloat(plane.style.getPropertyValue('--tilt-x'));
     return Number.isFinite(tilt) && tilt !== 0;
   })).toBe(true);
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'active');
+  await expect(page.locator('[data-motion-status]')).toHaveText('Movimento ativado.');
+  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
+});
+
+test('uses acceleration samples when iPhone does not emit orientation events', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Sensor fallback is covered once at mobile width.');
+
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Ativar movimento' }).click();
+
+  await page.evaluate(() => {
+    const MotionEvent = window.DeviceMotionEvent as typeof DeviceMotionEvent;
+    window.dispatchEvent(
+      new MotionEvent('devicemotion', {
+        accelerationIncludingGravity: { x: 0, y: 0, z: 9.81 },
+      }),
+    );
+    window.dispatchEvent(
+      new MotionEvent('devicemotion', {
+        accelerationIncludingGravity: { x: 6, y: -4, z: 6 },
+      }),
+    );
+  });
+
+  await expect.poll(() => page.locator('[data-profile-plane]').evaluate((plane) => {
+    const tilt = Number.parseFloat(plane.style.getPropertyValue('--tilt-x'));
+    return Number.isFinite(tilt) && tilt !== 0;
+  })).toBe(true);
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'active');
 });
 
 test('keeps motion disabled when Safari permission is denied', async ({ page }, testInfo) => {
