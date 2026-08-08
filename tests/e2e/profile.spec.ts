@@ -138,7 +138,7 @@ test('keeps the desktop banner legible and the solutions hierarchy contained', a
   expect(layout.horizontalOverflow).toBe(false);
 });
 
-test('keeps cards nearly full width within mobile safe gutters', async ({ page }, testInfo) => {
+test('keeps cards comfortably inset within mobile safe gutters', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Safe touch gutters are calibrated at the primary mobile viewport.');
 
   await page.goto('/');
@@ -154,11 +154,11 @@ test('keeps cards nearly full width within mobile safe gutters', async ({ page }
     };
   });
 
-  expect(geometry.left).toBeGreaterThanOrEqual(12);
-  expect(geometry.left).toBeLessThanOrEqual(16);
-  expect(geometry.viewportWidth - geometry.right).toBeGreaterThanOrEqual(12);
-  expect(geometry.viewportWidth - geometry.right).toBeLessThanOrEqual(16);
-  expect(geometry.width).toBeGreaterThanOrEqual(geometry.viewportWidth - 32);
+  expect(geometry.left).toBeGreaterThanOrEqual(20);
+  expect(geometry.left).toBeLessThanOrEqual(24);
+  expect(geometry.viewportWidth - geometry.right).toBeGreaterThanOrEqual(20);
+  expect(geometry.viewportWidth - geometry.right).toBeLessThanOrEqual(24);
+  expect(geometry.width).toBeGreaterThanOrEqual(geometry.viewportWidth - 48);
   expect(geometry.horizontalOverflow).toBe(false);
 });
 
@@ -254,13 +254,21 @@ test('groups business solutions and digital presence without interrupting contac
   expect(sequence).toEqual([
     'link:whatsapp',
     'link:cal',
+    'link:email',
     'label:SOLUÇÕES',
     'link:arm',
-    'link:email',
     'label:PRESENÇA',
     'link:github',
-    'link:x',
+    'link:linkedin',
   ]);
+});
+
+test('ends cleanly without a name sign-off', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.locator('.page-footer')).toHaveCount(0);
+  await expect(page.locator('.page-divider')).toHaveCount(0);
+  await expect(page.getByText('Julismo Costa', { exact: true })).toHaveCount(0);
 });
 
 test('keeps the full card keyboard-operable', async ({ page }) => {
@@ -339,10 +347,10 @@ test('keeps all six destinations ordered and secures external navigation', async
   const expectedLinks = [
     { id: 'whatsapp', href: 'https://api.whatsapp.com/send?phone=351933751885', external: false },
     { id: 'cal', href: 'https://cal.com/julismo-costa-3nxpms/30min', external: true },
-    { id: 'arm', href: 'https://arm-lda.com/', external: true },
     { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
+    { id: 'arm', href: 'https://arm-lda.com/', external: true },
     { id: 'github', href: 'https://github.com/julismo', external: true },
-    { id: 'x', href: 'https://x.com/_Julismo', external: true },
+    { id: 'linkedin', href: 'https://www.linkedin.com/in/julismocosta/', external: true },
   ];
 
   for (const link of expectedLinks) {

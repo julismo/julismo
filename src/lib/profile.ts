@@ -1,4 +1,4 @@
-export type LinkId = 'whatsapp' | 'cal' | 'arm' | 'email' | 'github' | 'x';
+export type LinkId = 'whatsapp' | 'cal' | 'arm' | 'email' | 'github' | 'linkedin';
 
 export type IconName = LinkId;
 
