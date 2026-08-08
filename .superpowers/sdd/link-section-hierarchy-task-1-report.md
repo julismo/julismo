@@ -57,3 +57,71 @@
 ## Commit SHA
 
 - `fcc0ba05a95c8e469d8b393f79a64b9e4b07c303`
+
+---
+
+## Task 2 desktop spacing fix report
+
+### TDD RED evidence
+
+- Focused desktop RED: `npx playwright test tests/e2e/profile.spec.ts --project=desktop --grep "keeps the desktop banner legible and the solutions hierarchy contained" --reporter=list`
+  - Result: 1 failed.
+  - Expected/observed cause: `scrollHeight` was `926`, expected `<= 900`.
+- First minimal CSS attempt check:
+  - Result: same focused test still failed with `scrollHeight` `922`.
+  - Cause: the initial desktop list-spacing override was placed before later base rules, so it did not win in the cascade for `.link-list` and `.link-section-label`.
+
+### Implementation summary
+
+- Kept the fix CSS-only and desktop-only in `src/styles/global.css`.
+- Reduced desktop bottom padding on `.page-shell` from `10px` to `2px`.
+- Reduced desktop `.link-list` gap from `8px` to `4px`.
+- Tightened desktop `.link-section-label` vertical margins from `6px 0 -1px 58px` to `2px 0 -3px 58px`.
+- Reduced desktop `.page-divider` margins from `17px 0 12px` to `14px 0 10px`.
+- Placed the desktop divider override after the base divider rule so the cascade applies the intended desktop spacing.
+
+### GREEN evidence
+
+- Focused desktop GREEN: `npx playwright test tests/e2e/profile.spec.ts --project=desktop --grep "keeps the desktop banner legible and the solutions hierarchy contained|groups business solutions" --reporter=list`
+  - Final result: 2 passed.
+
+### Layout measurements
+
+- Desktop viewport used for verification: `1440x900`.
+- Final measured CSS values:
+  - `.page-shell` `padding-bottom`: `2px`
+  - `.link-list` `gap`: `4px`
+  - `.link-section-label` margins: `2px 0 -3px 58px`
+  - `.page-divider` margins: `14px 0 10px`
+- Final geometry probe against the verified local Astro server:
+  - `document.documentElement.scrollHeight`: `900`
+  - `.page-shell` bottom edge: `873.40625`
+  - `.page-footer` bottom edge: `871.40625`
+  - `.page-divider` top/bottom: `846.40625` / `847.40625`
+- Interpretation: the document still reports a viewport-tall `scrollHeight` of `900`, but the actual composed shell content ends about `26.6px` above the viewport bottom, so the no-scroll desktop contract has real layout headroom.
+
+### Full verification summary
+
+- `npm run check`
+  - Final result: 0 errors, 0 warnings, 0 hints.
+- `npm run test:unit`
+  - Final result: 4 files passed, 13 tests passed.
+- `npx playwright test --reporter=line`
+  - Final result: 54 passed, 41 skipped, 0 failed.
+- `npm run build`
+  - Final result: build succeeded, 1 page built.
+- `git diff --check`
+  - Final result: no diff errors; Git only reported LF→CRLF working-copy warnings for `src/styles/global.css`.
+
+### Changed files
+
+- `src/styles/global.css`
+- `.superpowers/sdd/link-section-hierarchy-task-1-report.md`
+
+### Concerns
+
+- No product-behaviour concerns. The only notable detail is that `scrollHeight` remains exactly viewport-tall (`900`) because the document is at least viewport height, so the stronger evidence for slack is the measured shell/footer geometry above the fold.
+
+### Commit SHA
+
+- Pending at report-write time; filled in after commit below.
