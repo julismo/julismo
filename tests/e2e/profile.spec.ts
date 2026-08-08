@@ -138,7 +138,7 @@ test('keeps the desktop banner legible and the solutions hierarchy contained', a
   expect(layout.horizontalOverflow).toBe(false);
 });
 
-test('keeps cards nearly full width within mobile safe gutters', async ({ page }, testInfo) => {
+test('keeps cards comfortably inset within mobile safe gutters', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Safe touch gutters are calibrated at the primary mobile viewport.');
 
   await page.goto('/');
@@ -154,11 +154,11 @@ test('keeps cards nearly full width within mobile safe gutters', async ({ page }
     };
   });
 
-  expect(geometry.left).toBeGreaterThanOrEqual(12);
-  expect(geometry.left).toBeLessThanOrEqual(16);
-  expect(geometry.viewportWidth - geometry.right).toBeGreaterThanOrEqual(12);
-  expect(geometry.viewportWidth - geometry.right).toBeLessThanOrEqual(16);
-  expect(geometry.width).toBeGreaterThanOrEqual(geometry.viewportWidth - 32);
+  expect(geometry.left).toBeGreaterThanOrEqual(20);
+  expect(geometry.left).toBeLessThanOrEqual(24);
+  expect(geometry.viewportWidth - geometry.right).toBeGreaterThanOrEqual(20);
+  expect(geometry.viewportWidth - geometry.right).toBeLessThanOrEqual(24);
+  expect(geometry.width).toBeGreaterThanOrEqual(geometry.viewportWidth - 48);
   expect(geometry.horizontalOverflow).toBe(false);
 });
 

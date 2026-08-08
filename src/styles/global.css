@@ -54,7 +54,7 @@ a {
   min-width: 0;
   position: relative;
   z-index: 1;
-  width: min(calc(100% - 24px), var(--content-width));
+  width: min(calc(100% - 40px), var(--content-width));
   margin: 0 auto;
   padding: 0 0 30px;
   transform: perspective(850px) translate3d(var(--shift-x, 0), var(--shift-y, 0), 0) rotateX(var(--tilt-x, 0)) rotateY(var(--tilt-y, 0));
