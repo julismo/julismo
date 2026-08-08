@@ -254,9 +254,9 @@ test('groups business solutions and digital presence without interrupting contac
   expect(sequence).toEqual([
     'link:whatsapp',
     'link:cal',
+    'link:email',
     'label:SOLUÇÕES',
     'link:arm',
-    'link:email',
     'label:PRESENÇA',
     'link:github',
     'link:linkedin',
@@ -339,8 +339,8 @@ test('keeps all six destinations ordered and secures external navigation', async
   const expectedLinks = [
     { id: 'whatsapp', href: 'https://api.whatsapp.com/send?phone=351933751885', external: false },
     { id: 'cal', href: 'https://cal.com/julismo-costa-3nxpms/30min', external: true },
-    { id: 'arm', href: 'https://arm-lda.com/', external: true },
     { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
+    { id: 'arm', href: 'https://arm-lda.com/', external: true },
     { id: 'github', href: 'https://github.com/julismo', external: true },
     { id: 'linkedin', href: 'https://www.linkedin.com/in/julismocosta/', external: true },
   ];

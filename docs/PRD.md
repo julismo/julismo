@@ -69,10 +69,11 @@ O tom deve transmitir que o Julismo entende operações que já existem e quer m
 | Ordem | Título | Texto auxiliar | Tipo de destino |
 | --- | --- | --- | --- |
 | 1 | Falar comigo | WhatsApp · resposta direta | `https://api.whatsapp.com/send?phone=351933751885` |
-| 2 | ARM Solutions | IA e automação para PMEs | `https://arm-lda.com/` |
+| 2 | Agendar diagnóstico | 30 min · escolha o melhor horário | `https://cal.com/julismo-costa-3nxpms/30min` |
 | 3 | Email | Escreve-me diretamente | `mailto:julismocosta@gmail.com` |
-| 4 | GitHub | Código e projetos open source | `https://github.com/julismo` |
-| 5 | LinkedIn | Perfil profissional | `https://www.linkedin.com/in/julismocosta/` |
+| 4 | ARM Solutions | IA e automação para PMEs | `https://arm-lda.com/` |
+| 5 | GitHub | Código e projetos open source | `https://github.com/julismo` |
+| 6 | LinkedIn | Perfil profissional | `https://www.linkedin.com/in/julismocosta/` |
 
 Fonte de validação dos destinos pessoais: página atual `https://linktr.ee/julismocosta`, verificada em 7 de agosto de 2026, e URL de LinkedIn confirmada pelo proprietário em 8 de agosto de 2026.
 

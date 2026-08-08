@@ -29,15 +29,6 @@ export const profile = {
       interaction: 'cal-dialog',
     },
     {
-      id: 'arm',
-      title: 'ARM Solutions',
-      description: 'IA e automação para PMEs',
-      href: 'https://arm-lda.com/',
-      icon: 'arm',
-      section: 'solutions',
-      external: true,
-    },
-    {
       id: 'email',
       title: 'Email',
       description: 'Escreve-me diretamente',
@@ -45,6 +36,15 @@ export const profile = {
       icon: 'email',
       section: 'contact',
       external: false,
+    },
+    {
+      id: 'arm',
+      title: 'ARM Solutions',
+      description: 'IA e automação para PMEs',
+      href: 'https://arm-lda.com/',
+      icon: 'arm',
+      section: 'solutions',
+      external: true,
     },
     {
       id: 'github',
