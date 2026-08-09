@@ -442,10 +442,10 @@ test('keeps the ARM disclosure action static when reduced motion is requested', 
 
   expect(state.actionTransform).toBe('matrix(-1, 0, 0, -1, 0, 0)');
   for (const timing of [state.actionTiming, state.panelTiming]) {
-    expect(timing.animationDuration).toBeLessThanOrEqual(0.001);
-    expect(timing.animationDelay).toBeLessThanOrEqual(0.001);
-    expect(timing.transitionDuration).toBeLessThanOrEqual(0.001);
-    expect(timing.transitionDelay).toBeLessThanOrEqual(0.001);
+    expect(timing.animationDuration).toBe(0);
+    expect(timing.animationDelay).toBe(0);
+    expect(timing.transitionDuration).toBe(0);
+    expect(timing.transitionDelay).toBe(0);
   }
 });
 

@@ -474,6 +474,14 @@ a {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .solution-disclosure .link-card__action-icon,
+  .solution-disclosure__panel {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 .link-card--primary {
   border-color: transparent;
   background: #151517;
