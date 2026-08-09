@@ -10,7 +10,9 @@ Developer building practical TypeScript applications and reliable AI-assisted wo
 
 ## Selected work
 
-- [document-ops-workbench](https://github.com/julismo/document-ops-workbench) — local-first document review and cash-flow insight tooling.
+- [Document Ops Workbench](https://github.com/julismo/document-ops-workbench) — reviewable document operations workflows.
+- [SDR Review](https://github.com/julismo/sdr-review) — deterministic review logic with explicit human decisions.
+- [Obsidian Starter](https://github.com/julismo/obsidian-starter) — a structured Markdown vault starter with reusable templates.
 
 ## Contact
 
