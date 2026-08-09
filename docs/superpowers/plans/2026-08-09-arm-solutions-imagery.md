@@ -162,11 +162,17 @@ Immediately after that expectation add:
 
 ~~~ts
 test('keeps ARM visual assets local and within the mobile budget', () => {
-  const assets = armSolutions.map((solution) => join(process.cwd(), 'public', solution.image));
-  const sizes = assets.map((asset) => statSync(asset).size);
+  const imagePaths = armSolutions.map((solution) => (solution as { image?: string }).image);
 
-  expect(assets).toHaveLength(3);
+  expect(imagePaths).toEqual([
+    '/images/arm-solutions/quotes.webp',
+    '/images/arm-solutions/documents.webp',
+    '/images/arm-solutions/operations.webp',
+  ]);
+
+  const assets = imagePaths.map((image) => join(process.cwd(), 'public', image!));
   expect(assets.every(existsSync)).toBe(true);
+  const sizes = assets.map((asset) => statSync(asset).size);
   expect(sizes.every((size) => size <= 45 * 1024)).toBe(true);
   expect(sizes.reduce((total, size) => total + size, 0)).toBeLessThanOrEqual(135 * 1024);
 });
