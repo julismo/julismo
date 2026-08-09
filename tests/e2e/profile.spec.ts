@@ -250,6 +250,8 @@ test('groups business solutions and digital presence without interrupting contac
     items.map((item) =>
       item.classList.contains('link-section-label')
         ? `label:${item.textContent?.trim()}`
+        : item.matches('details[data-solutions-disclosure][data-link-id="arm"]')
+          ? 'disclosure:arm'
         : `link:${item.getAttribute('data-link-id')}`,
     ),
   );
@@ -259,7 +261,7 @@ test('groups business solutions and digital presence without interrupting contac
     'link:cal',
     'link:email',
     'label:SOLUÇÕES',
-    'link:arm',
+    'disclosure:arm',
     'label:PRESENÇA',
     'link:linkedin',
     'link:github',
@@ -275,7 +277,15 @@ test('groups business solutions and digital presence without interrupting contac
   });
   expect(presenceGeometry.linkedInTop).toBeLessThan(presenceGeometry.githubTop);
 
-  await page.locator('[data-link-id="arm"]').focus();
+  const armDisclosure = page.locator('.link-list > details[data-solutions-disclosure][data-link-id="arm"]');
+  const armSummary = page.locator(
+    'details[data-solutions-disclosure][data-link-id="arm"] > summary[data-arm-summary]',
+  );
+  await expect(armDisclosure).toHaveCount(1);
+  await expect(armDisclosure).not.toHaveAttribute('open', '');
+  await expect(page.locator('.link-list > a[data-link-id="arm"]')).toHaveCount(0);
+  await armSummary.focus();
+  await expect(armSummary).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('[data-link-id="linkedin"]')).toBeFocused();
   await page.keyboard.press('Tab');
@@ -285,11 +295,13 @@ test('groups business solutions and digital presence without interrupting contac
 test('reveals ARM entry solutions progressively and keeps its website available', async ({ page }) => {
   await page.goto('/');
 
-  const disclosure = page.locator('[data-solutions-disclosure]');
-  const summary = disclosure.locator('summary');
+  const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  const summary = page.locator(
+    'details[data-solutions-disclosure][data-link-id="arm"] > summary[data-arm-summary]',
+  );
   await expect(disclosure).toHaveCount(1);
+  await expect(summary).toHaveCount(1);
   await expect(disclosure).not.toHaveAttribute('open', '');
-  await expect(summary).toHaveAttribute('data-arm-summary', '');
   await expect(summary.getByText('Para distribuição, transportes e logística')).toBeVisible();
 
   await summary.focus();
@@ -304,6 +316,99 @@ test('reveals ARM entry solutions progressively and keeps its website available'
   await expect(armSite).toHaveAttribute('href', 'https://arm-lda.com/');
   await expect(armSite).toHaveAttribute('target', '_blank');
   await expect(armSite).toHaveAttribute('rel', 'noopener noreferrer');
+});
+
+test('keeps expanded ARM solutions within mobile width', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Expanded disclosure geometry is covered once at the primary mobile viewport.');
+
+  await page.goto('/');
+
+  const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  const summary = page.locator(
+    'details[data-solutions-disclosure][data-link-id="arm"] > summary[data-arm-summary]',
+  );
+  await expect(disclosure).toHaveCount(1);
+  await expect(summary).toHaveCount(1);
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(disclosure).toHaveAttribute('open', '');
+  await expect(disclosure.locator('[data-solution-id]')).toHaveCount(3);
+
+  const layout = await disclosure.evaluate((element) => {
+    const disclosureBox = element.getBoundingClientRect();
+    const items = Array.from(element.querySelectorAll<HTMLElement>('[data-solution-id]')).map((item) => {
+      const box = item.getBoundingClientRect();
+      return { left: box.left, right: box.right };
+    });
+
+    return {
+      disclosureLeft: disclosureBox.left,
+      disclosureRight: disclosureBox.right,
+      items,
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    };
+  });
+
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.viewportWidth);
+  for (const item of layout.items) {
+    expect(item.left).toBeGreaterThanOrEqual(layout.disclosureLeft);
+    expect(item.right).toBeLessThanOrEqual(layout.disclosureRight);
+  }
+});
+
+test('keeps the ARM disclosure action static when reduced motion is requested', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Disclosure reduced-motion behavior is covered once at the primary mobile viewport.');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  const summary = page.locator(
+    'details[data-solutions-disclosure][data-link-id="arm"] > summary[data-arm-summary]',
+  );
+  const actionIcon = page.locator(
+    'details[data-solutions-disclosure][data-link-id="arm"] > summary[data-arm-summary] .link-card__action-icon',
+  );
+  const panel = disclosure.locator('.solution-disclosure__panel');
+  await expect(disclosure).toHaveCount(1);
+  await expect(summary).toHaveCount(1);
+  await expect(actionIcon).toHaveCount(1);
+  await expect(panel).toHaveCount(1);
+  await expect(disclosure).not.toHaveAttribute('open', '');
+  await expect(actionIcon).toHaveCSS('transform', 'none');
+
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(disclosure).toHaveAttribute('open', '');
+
+  const state = await page.evaluate(() => {
+    const action = document.querySelector<HTMLElement>(
+      'details[data-solutions-disclosure][data-link-id="arm"] > summary[data-arm-summary] .link-card__action-icon',
+    );
+    const panel = document.querySelector<HTMLElement>(
+      'details[data-solutions-disclosure][data-link-id="arm"] .solution-disclosure__panel',
+    );
+    if (!action || !panel) throw new Error('O estado da divulgação ARM não está disponível.');
+
+    const durationInSeconds = (element: HTMLElement) =>
+      Math.max(
+        ...getComputedStyle(element).transitionDuration.split(',').map((duration) => {
+          const value = Number.parseFloat(duration);
+          return duration.trim().endsWith('ms') ? value / 1000 : value;
+        }),
+      );
+
+    return {
+      actionTransform: getComputedStyle(action).transform,
+      actionTransitionDuration: durationInSeconds(action),
+      panelTransitionDuration: durationInSeconds(panel),
+    };
+  });
+
+  expect(state.actionTransform).toBe('matrix(-1, 0, 0, -1, 0, 0)');
+  expect(state.actionTransitionDuration).toBeLessThanOrEqual(0.001);
+  expect(state.panelTransitionDuration).toBeLessThanOrEqual(0.001);
 });
 
 test('ends cleanly without a name sign-off', async ({ page }) => {
