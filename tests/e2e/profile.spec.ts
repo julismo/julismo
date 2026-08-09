@@ -226,14 +226,15 @@ test('closes the Cal dialog when its backdrop is clicked', async ({ page }, test
   await expect(dialog).not.toHaveAttribute('open', '');
 });
 
-test('renders the approved identity and six complete action cards', async ({ page }) => {
+test('renders the approved identity and five direct links plus the ARM disclosure', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByRole('heading', { level: 1, name: 'Julismo' })).toBeVisible();
   await expect(
     page.getByText('Simplifico processos que atrasam a equipa, sem trocar o que já funciona.'),
   ).toBeVisible();
-  await expect(page.getByRole('link')).toHaveCount(6);
+  await expect(page.getByRole('link')).toHaveCount(5);
+  await expect(page.locator('summary[data-arm-summary]')).toHaveCount(1);
   await expect(
     page.getByRole('link', { name: /Falar comigo.*WhatsApp.*resposta direta/ }),
   ).toHaveAttribute(
@@ -318,7 +319,7 @@ test('reveals ARM entry solutions progressively and keeps its website available'
   await expect(armSite).toHaveAttribute('rel', 'noopener noreferrer');
 });
 
-test('keeps expanded ARM solutions within mobile width', async ({ page }, testInfo) => {
+test('keeps expanded ARM solutions within mobile width and logical tab order', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Expanded disclosure geometry is covered once at the primary mobile viewport.');
 
   await page.goto('/');
@@ -355,6 +356,29 @@ test('keeps expanded ARM solutions within mobile width', async ({ page }, testIn
     expect(item.left).toBeGreaterThanOrEqual(layout.disclosureLeft);
     expect(item.right).toBeLessThanOrEqual(layout.disclosureRight);
   }
+
+  await expect(disclosure).toHaveCSS('display', 'grid');
+  await expect(disclosure.locator('.solution-disclosure__panel')).toHaveCSS('display', 'grid');
+
+  await summary.focus();
+  await page.keyboard.press('Tab');
+  await expect(disclosure.locator('[data-arm-site]')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('[data-link-id="linkedin"]')).toBeFocused();
+});
+
+test('keeps at least 32px of black breathing room after GitHub on desktop', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Desktop breathing room is calibrated at 1440 by 900.');
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const breathingRoom = await page.locator('[data-link-id="github"]').evaluate((github) => {
+    const githubBottom = github.getBoundingClientRect().bottom;
+    return document.documentElement.scrollHeight - githubBottom;
+  });
+
+  expect(breathingRoom).toBeGreaterThanOrEqual(32);
 });
 
 test('keeps the ARM disclosure action static when reduced motion is requested', async ({ page }, testInfo) => {
