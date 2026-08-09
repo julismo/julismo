@@ -1,0 +1,44 @@
+---
+import type { armSolutions } from '../data/profile';
+import type { ProfileLink } from '../lib/profile';
+import BrandIcon from './BrandIcon.astro';
+
+interface Props {
+  link: ProfileLink;
+  solutions: typeof armSolutions;
+}
+
+const { link, solutions } = Astro.props;
+---
+
+<details class="solution-disclosure" data-solutions-disclosure data-link-id={link.id}>
+  <summary class="link-card link-card--work" data-arm-summary>
+    <span class="link-card__icon">
+      <BrandIcon name={link.icon} />
+    </span>
+    <span class="link-card__copy">
+      <strong>{link.title}</strong>
+      <small>{link.description}</small>
+    </span>
+    <span class="link-card__action" aria-hidden="true">
+      <svg class="link-card__action-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 12h13m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </span>
+  </summary>
+  <div class="solution-disclosure__panel">
+    <ul class="solution-disclosure__list" aria-label="Soluções ARM">
+      {
+        solutions.map((solution) => (
+          <li class="solution-disclosure__item" data-solution-id={solution.id}>
+            <strong>{solution.title}</strong>
+            <span>{solution.description}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <a class="solution-disclosure__site-link" data-arm-site href={link.href} target="_blank" rel="noopener noreferrer">
+      Conhecer a ARM Solutions
+    </a>
+  </div>
+</details>

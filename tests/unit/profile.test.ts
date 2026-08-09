@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { profile } from '../../src/data/profile';
+import { armSolutions, profile } from '../../src/data/profile';
 import { assertProfileLinks, validateProfileLinks, type ProfileLink } from '../../src/lib/profile';
 
 const validLink: ProfileLink = {
@@ -41,6 +41,26 @@ describe('profile link contract', () => {
       { id: 'arm', href: 'https://arm-lda.com/', external: true },
       { id: 'linkedin', href: 'https://www.linkedin.com/in/julismocosta/', external: true },
       { id: 'github', href: 'https://github.com/julismo', external: true },
+    ]);
+  });
+
+  test('defines the approved ARM solutions', () => {
+    expect(armSolutions).toEqual([
+      {
+        id: 'quotes',
+        title: 'Orçamentos que chegam a tempo',
+        description: 'Respostas rápidas, com margem protegida.',
+      },
+      {
+        id: 'documents',
+        title: 'Documentos prontos a faturar',
+        description: 'Guias, CMR e POD organizados antes de bloquearem faturação.',
+      },
+      {
+        id: 'operations',
+        title: 'Operação sob controlo',
+        description: 'Prioridades, atrasos e pendências visíveis antes de virarem problemas.',
+      },
     ]);
   });
 

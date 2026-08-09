@@ -1,8 +1,9 @@
 ---
 import LinkCard from '../components/LinkCard.astro';
+import SolutionDisclosure from '../components/SolutionDisclosure.astro';
 import CalDialog from '../components/CalDialog.astro';
 import ProfileHero from '../components/ProfileHero.astro';
-import { profile } from '../data/profile';
+import { armSolutions, profile } from '../data/profile';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const sectionLabels = {
@@ -21,7 +22,7 @@ const sectionLabels = {
             {link.section in sectionLabels && profile.links[index - 1]?.section !== link.section && (
               <span class="link-section-label">{sectionLabels[link.section as keyof typeof sectionLabels]}</span>
             )}
-            <LinkCard link={link} />
+            {link.id === 'arm' ? <SolutionDisclosure link={link} solutions={armSolutions} /> : <LinkCard link={link} />}
           </>
         ))
       }

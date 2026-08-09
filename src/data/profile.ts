@@ -2,6 +2,24 @@ import { assertProfileLinks, type ProfileLink } from '../lib/profile';
 
 export const siteUrl = new URL('https://julismo.vercel.app/');
 
+export const armSolutions = [
+  {
+    id: 'quotes',
+    title: 'Orçamentos que chegam a tempo',
+    description: 'Respostas rápidas, com margem protegida.',
+  },
+  {
+    id: 'documents',
+    title: 'Documentos prontos a faturar',
+    description: 'Guias, CMR e POD organizados antes de bloquearem faturação.',
+  },
+  {
+    id: 'operations',
+    title: 'Operação sob controlo',
+    description: 'Prioridades, atrasos e pendências visíveis antes de virarem problemas.',
+  },
+] as const;
+
 export const profile = {
   name: 'Julismo',
   fullName: 'Julismo Costa',
@@ -40,7 +58,7 @@ export const profile = {
     {
       id: 'arm',
       title: 'ARM Solutions',
-      description: 'IA e automação para PMEs',
+      description: 'Para distribuição, transportes e logística',
       href: 'https://arm-lda.com/',
       icon: 'arm',
       section: 'solutions',

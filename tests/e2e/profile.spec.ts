@@ -514,7 +514,6 @@ test('keeps all six destinations ordered and secures external navigation', async
     },
     { id: 'cal', href: 'https://cal.com/julismo-costa-3nxpms/30min', external: true },
     { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
-    { id: 'arm', href: 'https://arm-lda.com/', external: true },
     { id: 'linkedin', href: 'https://www.linkedin.com/in/julismocosta/', external: true },
     { id: 'github', href: 'https://github.com/julismo', external: true },
   ];
@@ -530,6 +529,14 @@ test('keeps all six destinations ordered and secures external navigation', async
       await expect(card).not.toHaveAttribute('target', '_blank');
     }
   }
+
+  const armDisclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  await expect(armDisclosure).not.toHaveAttribute('open', '');
+  await armDisclosure.locator('summary[data-arm-summary]').click();
+  const armSite = armDisclosure.locator('[data-arm-site]');
+  await expect(armSite).toHaveAttribute('href', 'https://arm-lda.com/');
+  await expect(armSite).toHaveAttribute('target', '_blank');
+  await expect(armSite).toHaveAttribute('rel', 'noopener noreferrer');
 
   const bookingCard = page.locator('[data-link-id="cal"]');
   await expect(bookingCard).toHaveAttribute('href', 'https://cal.com/julismo-costa-3nxpms/30min');
