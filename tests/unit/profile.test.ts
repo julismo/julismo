@@ -1,3 +1,5 @@
+import { existsSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 import { armSolutions, profile } from '../../src/data/profile';
 import { assertProfileLinks, validateProfileLinks, type ProfileLink } from '../../src/lib/profile';
@@ -50,18 +52,37 @@ describe('profile link contract', () => {
         id: 'quotes',
         title: 'Orçamentos que chegam a tempo',
         description: 'Respostas rápidas, com margem protegida.',
+        image: '/images/arm-solutions/quotes.webp',
       },
       {
         id: 'documents',
         title: 'Documentos prontos a faturar',
         description: 'Guias, CMR e POD organizados antes de bloquearem faturação.',
+        image: '/images/arm-solutions/documents.webp',
       },
       {
         id: 'operations',
         title: 'Operação sob controlo',
         description: 'Prioridades, atrasos e pendências visíveis antes de virarem problemas.',
+        image: '/images/arm-solutions/operations.webp',
       },
     ]);
+  });
+
+  test('keeps ARM visual assets local and within the mobile budget', () => {
+    const imagePaths = armSolutions.map((solution) => (solution as { image?: string }).image);
+
+    expect(imagePaths).toEqual([
+      '/images/arm-solutions/quotes.webp',
+      '/images/arm-solutions/documents.webp',
+      '/images/arm-solutions/operations.webp',
+    ]);
+
+    const assets = imagePaths.map((image) => join(process.cwd(), 'public', image!));
+    expect(assets.every(existsSync)).toBe(true);
+    const sizes = assets.map((asset) => statSync(asset).size);
+    expect(sizes.every((size) => size <= 45 * 1024)).toBe(true);
+    expect(sizes.reduce((total, size) => total + size, 0)).toBeLessThanOrEqual(135 * 1024);
   });
 
   test('rejects duplicate IDs, absent copy and unsafe schemes', () => {

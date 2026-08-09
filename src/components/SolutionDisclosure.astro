@@ -33,6 +33,19 @@ const { link, solutions } = Astro.props;
           <li class="solution-disclosure__item" data-solution-id={solution.id}>
             <strong>{solution.title}</strong>
             <span>{solution.description}</span>
+            <span class="solution-disclosure__visual" aria-hidden="true">
+              <img
+                class="solution-disclosure__image"
+                data-solution-image
+                src={solution.image}
+                alt=""
+                aria-hidden="true"
+                width="256"
+                height="256"
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
           </li>
         ))
       }

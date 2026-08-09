@@ -313,6 +313,25 @@ test('reveals ARM entry solutions progressively and keeps its website available'
   await expect(disclosure.getByText('Documentos prontos a faturar')).toBeVisible();
   await expect(disclosure.getByText('Operação sob controlo')).toBeVisible();
 
+  const visuals = disclosure.locator('[data-solution-image]');
+  await expect(visuals).toHaveCount(3);
+  const visualMetadata = await visuals.evaluateAll((images) => images.map((image) => ({
+    src: image.getAttribute('src'),
+    alt: image.getAttribute('alt'),
+    ariaHidden: image.getAttribute('aria-hidden'),
+    width: image.getAttribute('width'),
+    height: image.getAttribute('height'),
+    loading: image.getAttribute('loading'),
+    decoding: image.getAttribute('decoding'),
+  })));
+  expect(visualMetadata).toEqual(
+    [
+      { src: '/images/arm-solutions/quotes.webp', alt: '', ariaHidden: 'true', width: '256', height: '256', loading: 'lazy', decoding: 'async' },
+      { src: '/images/arm-solutions/documents.webp', alt: '', ariaHidden: 'true', width: '256', height: '256', loading: 'lazy', decoding: 'async' },
+      { src: '/images/arm-solutions/operations.webp', alt: '', ariaHidden: 'true', width: '256', height: '256', loading: 'lazy', decoding: 'async' },
+    ],
+  );
+
   const armSite = disclosure.locator('[data-arm-site]');
   await expect(armSite).toHaveAttribute('href', 'https://arm-lda.com/');
   await expect(armSite).toHaveAttribute('target', '_blank');

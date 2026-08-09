@@ -7,16 +7,19 @@ export const armSolutions = [
     id: 'quotes',
     title: 'Orçamentos que chegam a tempo',
     description: 'Respostas rápidas, com margem protegida.',
+    image: '/images/arm-solutions/quotes.webp',
   },
   {
     id: 'documents',
     title: 'Documentos prontos a faturar',
     description: 'Guias, CMR e POD organizados antes de bloquearem faturação.',
+    image: '/images/arm-solutions/documents.webp',
   },
   {
     id: 'operations',
     title: 'Operação sob controlo',
     description: 'Prioridades, atrasos e pendências visíveis antes de virarem problemas.',
+    image: '/images/arm-solutions/operations.webp',
   },
 ] as const;
 
