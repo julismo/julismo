@@ -129,29 +129,7 @@ const { link, solutions } = Astro.props;
 
     if (!carousel || slides.length < 2) return;
 
-    // 8 segundos por solução, escolha do Julismo a 2026-08-09. Duas regras à volta disto:
-    // uma escolha manual cancela a rotação de vez, porque intenção explícita ganha à
-    // automática; e com prefers-reduced-motion nunca arranca.
-    const SLIDE_MS = 8000;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-
     let index = 0;
-    let timer: number | undefined;
-    let manual = false;
-
-    const stop = () => {
-      if (timer !== undefined) window.clearInterval(timer);
-      timer = undefined;
-    };
-
-    const start = () => {
-      stop();
-      if (manual || reduced.matches || !disclosure.hasAttribute('open')) return;
-      timer = window.setInterval(() => {
-        index = (index + 1) % slides.length;
-        paint();
-      }, SLIDE_MS);
-    };
 
     const paint = () => {
       slides.forEach((slide, position) => {
@@ -174,21 +152,13 @@ const { link, solutions } = Astro.props;
       });
     };
 
-    const goTo = (next: number, byUser = true) => {
+    const goTo = (next: number) => {
       index = ((next % slides.length) + slides.length) % slides.length;
-      if (byUser) {
-        manual = true;
-        stop();
-      }
       paint();
     };
 
     dots.forEach((dot, position) => dot.addEventListener('click', () => goTo(position)));
     chips.forEach((chip, position) => chip.addEventListener('click', () => goTo(position)));
-
-    // Enquanto o rato está em cima, a rotação pára: não muda o slide a meio da leitura.
-    carousel.addEventListener('pointerenter', stop);
-    carousel.addEventListener('pointerleave', start);
 
     // Padrão ARIA de tabs: setas navegam dentro do tablist, Home e End vão aos extremos.
     dots.forEach((dot) => {
@@ -212,19 +182,13 @@ const { link, solutions } = Astro.props;
     disclosure.addEventListener('toggle', () => {
       if (disclosure.hasAttribute('open')) {
         hydrateImages();
-        manual = false;
-        goTo(0, false);
-        start();
-      } else {
-        stop();
+        goTo(0);
       }
     });
 
     if (disclosure.hasAttribute('open')) hydrateImages();
 
-    reduced.addEventListener('change', start);
     paint();
-    start();
   });
 </script>
 </details>

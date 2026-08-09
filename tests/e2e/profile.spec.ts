@@ -391,6 +391,13 @@ test('ARM carousel supports manual keyboard selection', async ({ page }, testInf
   await expect(tab('quotes')).toHaveAttribute('aria-selected', 'true');
   await expect(chip('quotes')).toHaveAttribute('aria-pressed', 'true');
 
+  if (testInfo.project.name === 'desktop') {
+    // A página não muda escolhas do visitante sozinha: o conteúdo mantém-se legível
+    // até existir uma intenção explícita, mesmo depois do antigo intervalo de 8 s.
+    await page.waitForTimeout(8_300);
+    await expect(panel('quotes')).toHaveAttribute('data-active', 'true');
+  }
+
   await chip('operations').click();
   await expect(panel('operations')).toHaveAttribute('data-active', 'true');
   await expect(panel('quotes')).toHaveAttribute('data-active', 'false');
@@ -411,11 +418,6 @@ test('ARM carousel supports manual keyboard selection', async ({ page }, testInf
   await expect(tab('documents')).toBeFocused();
   await expect(panel('documents')).toHaveAttribute('data-active', 'true');
 
-  if (testInfo.project.name === 'desktop') {
-    await chip('operations').click();
-    await page.waitForTimeout(8_300);
-    await expect(panel('operations')).toHaveAttribute('data-active', 'true');
-  }
 });
 
 test('keeps expanded ARM solutions contained across supported widths', async ({ page }, testInfo) => {
@@ -464,10 +466,10 @@ test('keeps expanded ARM solutions contained across supported widths', async ({ 
   }
 });
 
-test('stacks ARM chips below 340px without shrinking their touch targets', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop', 'The narrow width matrix runs once from the desktop project.');
+test('keeps ARM solution choices legible in a 2+1 grid', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'The width matrix runs once from the desktop project.');
 
-  for (const width of [280, 320]) {
+  for (const width of [280, 320, 390, 430, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
 
@@ -479,7 +481,7 @@ test('stacks ARM chips below 340px without shrinking their touch targets', async
       const listBox = list.getBoundingClientRect();
       const items = Array.from(list.querySelectorAll<HTMLElement>('li')).map((item) => {
         const box = item.getBoundingClientRect();
-        return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: box.width };
+        return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: box.width, height: box.height };
       });
 
       return {
@@ -499,6 +501,7 @@ test('stacks ARM chips below 340px without shrinking their touch targets', async
     for (const item of layout.items) {
       expect(item.left, `${width}px item left`).toBeGreaterThanOrEqual(layout.list.left);
       expect(item.right, `${width}px item right`).toBeLessThanOrEqual(layout.list.right);
+      expect(item.height, `${width}px touch target`).toBeGreaterThanOrEqual(64);
     }
   }
 });
