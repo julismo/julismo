@@ -36,13 +36,14 @@ const restorePrimaryActionFocus = () => {
 };
 
 const startMotion = (onFirstSample: () => void) => {
-  if (!plane || (!orientationEvent && !motionEvent)) return;
+  if (!plane || (!orientationEvent && !motionEvent)) return () => {};
 
   let baseline: MotionSample | null = null;
   let current: Tilt = { rotateX: 0, rotateY: 0, translateX: 0, translateY: 0 };
   let frame = 0;
   let source: 'orientation' | 'acceleration' | null = null;
   let receivedSample = false;
+  let stopped = false;
 
   const render = () => {
     frame = 0;
@@ -53,7 +54,7 @@ const startMotion = (onFirstSample: () => void) => {
   };
 
   const consumeSample = (sample: MotionSample, nextSource: 'orientation' | 'acceleration') => {
-    if (document.hidden || (source && source !== nextSource)) return;
+    if (stopped || document.hidden || (source && source !== nextSource)) return;
 
     source ??= nextSource;
     baseline ??= calibrate(sample);
@@ -96,13 +97,42 @@ const startMotion = (onFirstSample: () => void) => {
       frame = 0;
     }
   });
+
+  return () => {
+    stopped = true;
+    if (frame) window.cancelAnimationFrame(frame);
+  };
 };
 
-const activateMotion = (shouldRestoreFocus = false) => {
+const activateMotion = (shouldRestoreFocus = false, waitForSafariSample = false) => {
   root.dataset.motion = 'waiting';
   if (status) status.textContent = 'A preparar movimento.';
 
-  startMotion(() => {
+  if (waitForSafariSample && consent) {
+    consent.textContent = 'Mova o telemóvel…';
+  }
+
+  let stopMotion = () => {};
+  const firstSampleTimeout = waitForSafariSample
+    ? window.setTimeout(() => {
+        if (root.dataset.motion !== 'waiting') return;
+
+        stopMotion();
+        root.dataset.motion = 'unavailable';
+        if (consent) {
+          consent.hidden = false;
+          consent.disabled = true;
+          consent.textContent = 'Movimento indisponível';
+        }
+        if (status) {
+          status.textContent = 'Não foi possível detetar movimento. Abra esta página diretamente no Safari e experimente novamente.';
+        }
+        if (shouldRestoreFocus) restorePrimaryActionFocus();
+      }, 2_000)
+    : undefined;
+
+  stopMotion = startMotion(() => {
+    if (firstSampleTimeout !== undefined) window.clearTimeout(firstSampleTimeout);
     root.dataset.motion = 'active';
     if (consent) consent.hidden = true;
     if (status) status.textContent = 'Movimento ativado.';
@@ -154,8 +184,7 @@ if (!plane || (!orientationEvent && !motionEvent)) {
         void Promise.all(permissionRequests)
           .then((permissions) => {
             if (permissions.every((permission) => permission === 'granted')) {
-              consent.textContent = 'Mova o telemóvel…';
-              activateMotion(shouldRestoreFocus);
+              activateMotion(shouldRestoreFocus, true);
             } else {
               root.dataset.motion = 'denied';
               settleDeniedPermission(shouldRestoreFocus);

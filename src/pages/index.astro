@@ -12,9 +12,9 @@ const sectionLabels = {
 ---
 
 <BaseLayout title={'Julismo \u2014 Processos mais simples'} description={profile.bio}>
-  <main class="page-shell" data-profile-plane>
+  <main class="page-shell">
     <ProfileHero name={profile.name} bio={profile.bio} image={profile.image} />
-    <nav class="link-list" aria-label="Contactos e presen&#231;a digital">
+    <nav class="link-list" data-profile-plane aria-label="Contactos e presen&#231;a digital">
       {
         profile.links.map((link, index) => (
           <>

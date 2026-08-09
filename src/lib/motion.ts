@@ -18,9 +18,9 @@ export interface Tilt {
 
 export const MOTION_LIMITS = {
   deadZone: 0.8,
-  maxRotation: 1.5,
-  maxTranslation: 3,
-  smoothing: 0.12,
+  maxRotation: 1.75,
+  maxTranslation: 8,
+  smoothing: 0.18,
 } as const;
 
 const zeroTilt = (): Tilt => ({
@@ -65,14 +65,14 @@ export function targetTilt(sample: MotionSample, baseline: MotionSample): Tilt {
     return zeroTilt();
   }
 
-  const rotateX = clamp(-betaDelta / 18, MOTION_LIMITS.maxRotation);
-  const rotateY = clamp(gammaDelta / 18, MOTION_LIMITS.maxRotation);
+  const rotateX = clamp(-betaDelta / 12, MOTION_LIMITS.maxRotation);
+  const rotateY = clamp(gammaDelta / 10, MOTION_LIMITS.maxRotation);
 
   return {
     rotateX,
     rotateY,
-    translateX: clamp(rotateY * 2, MOTION_LIMITS.maxTranslation),
-    translateY: clamp(-rotateX * 2, MOTION_LIMITS.maxTranslation),
+    translateX: clamp(rotateY * 4, MOTION_LIMITS.maxTranslation),
+    translateY: clamp(-rotateX * 4, MOTION_LIMITS.maxTranslation),
   };
 }
 

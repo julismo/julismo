@@ -477,6 +477,139 @@ test('Safari waits for an orientation sample before marking motion active', asyn
   await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
 });
 
+test('moves the card plane visibly while the hero stays fixed in Safari', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Motion geometry is calibrated at the primary mobile viewport.');
+
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
+  await page.goto('/');
+
+  const before = await page.locator('body').evaluate((body) => {
+    const hero = body.querySelector<HTMLElement>('.profile-hero')!;
+    const whatsapp = body.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+
+    return {
+      heroLeft: hero.getBoundingClientRect().left,
+      whatsappLeft: whatsapp.getBoundingClientRect().left,
+    };
+  });
+
+  await page.getByRole('button', { name: 'Ativar movimento' }).click();
+  await page.evaluate(() => {
+    const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
+    window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 0 }));
+
+    for (let index = 0; index < 12; index += 1) {
+      window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 20 }));
+    }
+  });
+
+  await expect.poll(() => page.locator('[data-profile-plane]').evaluate((plane) =>
+    Number.parseFloat(plane.style.getPropertyValue('--shift-x')),
+  )).toBeGreaterThanOrEqual(5);
+
+  const after = await page.locator('body').evaluate((body) => {
+    const hero = body.querySelector<HTMLElement>('.profile-hero')!;
+    const whatsapp = body.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+
+    return {
+      heroLeft: hero.getBoundingClientRect().left,
+      whatsappLeft: whatsapp.getBoundingClientRect().left,
+    };
+  });
+
+  expect(after.whatsappLeft - before.whatsappLeft).toBeGreaterThanOrEqual(5);
+  expect(Math.abs(after.heroLeft - before.heroLeft)).toBeLessThanOrEqual(1);
+});
+
+test('moves the card plane visibly without shifting the hero in Safari', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Motion geometry is calibrated at the primary mobile viewport.');
+
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
+  await page.goto('/');
+
+  const before = await page.locator('body').evaluate((body) => {
+    const hero = body.querySelector<HTMLElement>('.profile-hero')!;
+    const whatsapp = body.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+
+    return {
+      heroLeft: hero.getBoundingClientRect().left,
+      whatsappLeft: whatsapp.getBoundingClientRect().left,
+    };
+  });
+
+  await page.getByRole('button', { name: 'Ativar movimento' }).click();
+  await page.evaluate(() => {
+    const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
+    window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 0 }));
+
+    for (let index = 0; index < 12; index += 1) {
+      window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 20 }));
+    }
+  });
+
+  await expect.poll(() => page.locator('[data-profile-plane]').evaluate((plane) =>
+    Math.abs(Number.parseFloat(plane.style.getPropertyValue('--shift-x'))),
+  )).toBeGreaterThan(0);
+
+  const after = await page.locator('body').evaluate((body) => {
+    const hero = body.querySelector<HTMLElement>('.profile-hero')!;
+    const whatsapp = body.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+
+    return {
+      heroLeft: hero.getBoundingClientRect().left,
+      whatsappLeft: whatsapp.getBoundingClientRect().left,
+    };
+  });
+
+  expect(Math.abs(after.whatsappLeft - before.whatsappLeft)).toBeGreaterThan(0);
+  expect(Math.abs(after.heroLeft - before.heroLeft)).toBeLessThanOrEqual(1);
+});
+
+test('reports unavailable motion when Safari grants permission but receives no sensor event', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Safari no-sensor feedback is covered once at mobile width.');
+
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
+  await page.goto('/');
+  const initialConsent = page.getByRole('button', { name: 'Ativar movimento' });
+  await initialConsent.focus();
+  await page.keyboard.press('Enter');
+
+  await expect.poll(() => page.locator('html').getAttribute('data-motion')).toBe('unavailable');
+
+  const consent = page.getByRole('button', { name: 'Movimento indisponível' });
+  await expect(consent).toBeVisible();
+  await expect(consent).toBeDisabled();
+  await expect(page.locator('[data-motion-status]')).toContainText('Abra esta página diretamente no Safari');
+  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
+
+  const plane = page.locator('[data-profile-plane]');
+  const motionVariables = await plane.evaluate((element) => ({
+    tiltX: element.style.getPropertyValue('--tilt-x'),
+    tiltY: element.style.getPropertyValue('--tilt-y'),
+    shiftX: element.style.getPropertyValue('--shift-x'),
+    shiftY: element.style.getPropertyValue('--shift-y'),
+  }));
+
+  await page.evaluate(() => {
+    const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
+    window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 20 }));
+  });
+  await page.evaluate(() => new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve())));
+
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'unavailable');
+  await expect(consent).toBeVisible();
+  await expect(consent).toBeDisabled();
+  await expect(consent).toHaveText('Movimento indisponível');
+  await expect(page.locator('[data-motion-status]')).toContainText('Abra esta página diretamente no Safari');
+  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
+  await expect(plane.evaluate((element) => ({
+    tiltX: element.style.getPropertyValue('--tilt-x'),
+    tiltY: element.style.getPropertyValue('--tilt-y'),
+    shiftX: element.style.getPropertyValue('--shift-x'),
+    shiftY: element.style.getPropertyValue('--shift-y'),
+  }))).resolves.toEqual(motionVariables);
+});
+
 test('uses acceleration samples when iPhone does not emit orientation events', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Sensor fallback is covered once at mobile width.');
 
