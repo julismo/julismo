@@ -282,6 +282,30 @@ test('groups business solutions and digital presence without interrupting contac
   await expect(page.locator('[data-link-id="github"]')).toBeFocused();
 });
 
+test('reveals ARM entry solutions progressively and keeps its website available', async ({ page }) => {
+  await page.goto('/');
+
+  const disclosure = page.locator('[data-solutions-disclosure]');
+  const summary = disclosure.locator('summary');
+  await expect(disclosure).toHaveCount(1);
+  await expect(disclosure).not.toHaveAttribute('open', '');
+  await expect(summary).toHaveAttribute('data-arm-summary', '');
+  await expect(summary.getByText('Para distribuição, transportes e logística')).toBeVisible();
+
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(disclosure).toHaveAttribute('open', '');
+  await expect(disclosure.locator('[data-solution-id]')).toHaveCount(3);
+  await expect(disclosure.getByText('Orçamentos que chegam a tempo')).toBeVisible();
+  await expect(disclosure.getByText('Documentos prontos a faturar')).toBeVisible();
+  await expect(disclosure.getByText('Operação sob controlo')).toBeVisible();
+
+  const armSite = disclosure.locator('[data-arm-site]');
+  await expect(armSite).toHaveAttribute('href', 'https://arm-lda.com/');
+  await expect(armSite).toHaveAttribute('target', '_blank');
+  await expect(armSite).toHaveAttribute('rel', 'noopener noreferrer');
+});
+
 test('ends cleanly without a name sign-off', async ({ page }) => {
   await page.goto('/');
 

@@ -23,7 +23,7 @@ describe('profile link contract', () => {
       { id: 'whatsapp', title: 'Falar comigo', description: 'WhatsApp · resposta direta', section: 'contact' },
       { id: 'cal', title: 'Agendar diagnóstico', description: '30 min · escolha o melhor horário', section: 'contact' },
       { id: 'email', title: 'Email', description: 'Escreve-me diretamente', section: 'contact' },
-      { id: 'arm', title: 'ARM Solutions', description: 'IA e automação para PMEs', section: 'solutions' },
+      { id: 'arm', title: 'ARM Solutions', description: 'Para distribuição, transportes e logística', section: 'solutions' },
       { id: 'linkedin', title: 'LinkedIn', description: 'Perfil profissional', section: 'presence' },
       { id: 'github', title: 'GitHub', description: 'Código e projetos open source', section: 'presence' },
     ]);
