@@ -431,6 +431,8 @@ test('keeps expanded ARM solutions contained across supported widths', async ({ 
 
     const layout = await disclosure.evaluate((element) => {
       const disclosureBox = element.getBoundingClientRect();
+      const carouselBox = element.querySelector<HTMLElement>('[data-solution-carousel]')!.getBoundingClientRect();
+      const imageBox = element.querySelector<HTMLImageElement>('[data-solution-image]')!.getBoundingClientRect();
       const items = Array.from(element.querySelectorAll<HTMLElement>('[data-solution-id]')).map((item) => {
         const box = item.getBoundingClientRect();
         return { left: box.left, right: box.right };
@@ -439,6 +441,8 @@ test('keeps expanded ARM solutions contained across supported widths', async ({ 
       return {
         disclosureLeft: disclosureBox.left,
         disclosureRight: disclosureBox.right,
+        carousel: { left: carouselBox.left, right: carouselBox.right, width: carouselBox.width, height: carouselBox.height },
+        image: { width: imageBox.width, height: imageBox.height },
         items,
         scrollWidth: document.documentElement.scrollWidth,
         viewportWidth: window.innerWidth,
@@ -446,6 +450,10 @@ test('keeps expanded ARM solutions contained across supported widths', async ({ 
     });
 
     expect(layout.scrollWidth, `${width}px overflow`).toBeLessThanOrEqual(layout.viewportWidth);
+    expect(layout.carousel.left, `${width}px carousel left`).toBeGreaterThanOrEqual(layout.disclosureLeft);
+    expect(layout.carousel.right, `${width}px carousel right`).toBeLessThanOrEqual(layout.disclosureRight);
+    expect(layout.image.width / layout.image.height, `${width}px banner ratio`).toBeGreaterThan(2.2);
+    expect(layout.image.width / layout.image.height, `${width}px banner ratio`).toBeLessThan(2.45);
     for (const item of layout.items) {
       expect(item.left, `${width}px item left`).toBeGreaterThanOrEqual(layout.disclosureLeft);
       expect(item.right, `${width}px item right`).toBeLessThanOrEqual(layout.disclosureRight);
@@ -453,6 +461,45 @@ test('keeps expanded ARM solutions contained across supported widths', async ({ 
 
     await expect(disclosure).toHaveCSS('display', 'grid');
     await expect(disclosure.locator('.solution-disclosure__panel')).toHaveCSS('display', 'grid');
+  }
+});
+
+test('stacks ARM chips below 340px without shrinking their touch targets', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'The narrow width matrix runs once from the desktop project.');
+
+  for (const width of [280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+
+    const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+    await disclosure.locator('summary[data-arm-summary]').click();
+    await expect(disclosure).toHaveAttribute('open', '');
+
+    const layout = await disclosure.locator('.solution-disclosure__list').evaluate((list) => {
+      const listBox = list.getBoundingClientRect();
+      const items = Array.from(list.querySelectorAll<HTMLElement>('li')).map((item) => {
+        const box = item.getBoundingClientRect();
+        return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: box.width };
+      });
+
+      return {
+        list: { left: listBox.left, right: listBox.right },
+        items,
+        scrollWidth: document.documentElement.scrollWidth,
+        viewportWidth: window.innerWidth,
+      };
+    });
+
+    expect(layout.scrollWidth, `${width}px overflow`).toBeLessThanOrEqual(layout.viewportWidth);
+    expect(layout.items).toHaveLength(3);
+    expect(Math.abs(layout.items[0]!.top - layout.items[1]!.top), `${width}px first row`).toBeLessThanOrEqual(1);
+    expect(layout.items[2]!.top, `${width}px second row`).toBeGreaterThan(layout.items[0]!.bottom + 3);
+    expect(layout.items[2]!.width, `${width}px full-width final chip`).toBeGreaterThanOrEqual(layout.items[0]!.width * 1.9);
+
+    for (const item of layout.items) {
+      expect(item.left, `${width}px item left`).toBeGreaterThanOrEqual(layout.list.left);
+      expect(item.right, `${width}px item right`).toBeLessThanOrEqual(layout.list.right);
+    }
   }
 });
 

@@ -386,15 +386,30 @@ a {
   background: linear-gradient(110deg, #202025, #111113 62%, #1a1a1f);
 }
 
+/* A disclosure é UM cartão que cresce: a borda e o fundo vivem aqui, não no summary,
+   para o painel aberto ficar dentro da mesma caixa em vez de parecer um bloco à parte. */
 .solution-disclosure {
   display: grid;
   min-width: 0;
-  gap: 8px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  background: linear-gradient(110deg, #202025, #111113 62%, #1a1a1f);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3.5%);
+  overflow: hidden;
 }
 
 .solution-disclosure > summary {
   cursor: pointer;
   list-style: none;
+}
+
+/* O summary continua a ser um .link-card para herdar a grelha e a tipografia,
+   mas deixa de desenhar a sua própria caixa. */
+.solution-disclosure > summary.link-card {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .solution-disclosure > summary::-webkit-details-marker {
@@ -420,12 +435,130 @@ a {
   display: grid;
   min-width: 0;
   gap: 8px;
-  padding: 0 4px 2px;
+  padding: 2px 11px 11px;
 }
+
+/* Separador em vez de uma segunda borda: mantém a leitura de caixa única. */
+.solution-disclosure__panel::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background: var(--color-line);
+  margin: 0 -11px 2px;
+}
+
+/* ---- Carrossel ---- */
+
+.solution-carousel {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0b0b0d;
+}
+
+.solution-carousel__viewport {
+  position: relative;
+  aspect-ratio: 21 / 9;
+}
+
+.solution-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.55s ease, visibility 0s linear 0.55s;
+}
+
+.solution-slide[data-active='true'] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.55s ease, visibility 0s;
+}
+
+.solution-slide__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.78) contrast(0.96) brightness(0.88);
+  display: block;
+}
+
+/* O texto é HTML por cima da arte, nunca queimado na imagem: muda copy sem regerar arte.
+   A arte pode cruzar-se (duas imagens a 50% lêem-se como uma), mas o texto NÃO: dois títulos
+   sobrepostos a meio da transição ficam ilegíveis. Por isso o texto sai depressa e entra
+   com atraso, de forma a nunca haver dois ao mesmo tempo. */
+.solution-slide__copy {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: grid;
+  gap: 2px;
+  padding: 22px 13px 11px;
+  background: linear-gradient(to top, rgb(6 6 8 / 88%) 0%, rgb(6 6 8 / 55%) 55%, transparent 100%);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+.solution-slide[data-active='true'] .solution-slide__copy {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.28s ease 0.22s, transform 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.22s;
+}
+
+.solution-slide__copy strong {
+  font-size: 0.8rem;
+  font-weight: 660;
+  line-height: 1.2;
+  color: #f4f4f7;
+}
+
+.solution-slide__copy span {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: #b9b9c2;
+}
+
+/* ---- Bolinhas ---- */
+
+.solution-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 1px 0 0;
+}
+
+.solution-dots__dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 20%);
+  cursor: pointer;
+  transition: background 0.25s ease, width 0.25s ease;
+}
+
+.solution-dots__dot[data-active='true'] {
+  width: 16px;
+  border-radius: 3px;
+  background: #e8e8ec;
+}
+
+.solution-dots__dot:focus-visible {
+  outline: 2px solid #f1f1f4;
+  outline-offset: 3px;
+}
+
+/* ---- Chips: também são a navegação do carrossel ---- */
 
 .solution-disclosure__list {
   display: grid;
-  gap: 7px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -433,39 +566,94 @@ a {
 
 .solution-disclosure__item {
   display: grid;
+  align-content: start;
+  width: 100%;
+  height: 100%;
   min-width: 0;
   gap: 2px;
   border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgb(255 255 255 / 2.5%);
   color: var(--color-text);
-  padding: 9px 11px;
+  padding: 8px 9px 9px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.solution-disclosure__item[data-active='true'] {
+  border-color: rgb(255 255 255 / 20%);
+  background: rgb(255 255 255 / 7%);
+}
+
+.solution-disclosure__item:focus-visible {
+  outline: 2px solid #f1f1f4;
+  outline-offset: 2px;
 }
 
 .solution-disclosure__item strong {
-  font-size: 0.77rem;
+  font-size: 0.7rem;
   font-weight: 650;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .solution-disclosure__item span {
   color: var(--color-muted);
-  font-size: 0.7rem;
-  line-height: 1.35;
+  font-size: 0.63rem;
+  line-height: 1.3;
 }
 
+/* ---- CTA: passa de link de texto a cartão, como os outros destinos da página ---- */
+
 .solution-disclosure__site-link {
-  justify-self: start;
-  color: #d8d8dd;
-  font-size: 0.74rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 46px;
+  padding: 8px 13px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 12px;
+  background: linear-gradient(115deg, #2a2a30, #171719);
+  color: #eeeeef;
+  text-decoration: none;
+}
+
+.solution-disclosure__site-copy strong {
+  display: block;
+  font-size: 0.79rem;
   font-weight: 650;
-  padding: 3px 8px;
-  text-underline-offset: 0.16em;
+  line-height: 1.2;
+}
+
+.solution-disclosure__site-icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 7%);
+  color: #cfcfd6;
+}
+
+.solution-disclosure__site-link:hover {
+  border-color: rgb(255 255 255 / 26%);
 }
 
 .solution-disclosure__site-link:focus-visible {
   outline: 2px solid #f1f1f4;
   outline-offset: 3px;
+}
+
+@media (max-width: 340px) {
+  .solution-disclosure__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .solution-disclosure__list > li:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -476,9 +664,20 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .solution-disclosure .link-card__action-icon,
-  .solution-disclosure__panel {
+  .solution-disclosure__panel,
+  .solution-slide,
+  .solution-slide__copy,
+  .solution-dots__dot,
+  .solution-disclosure__item {
     animation: none !important;
     transition: none !important;
+  }
+
+  /* Só o deslize de entrada do texto é que desaparece. O `transform` NÃO é neutralizado
+     em bloco de propósito: a rotação do chevron indica que a secção está aberta, é
+     informação de estado e não decoração, e tem de sobreviver ao reduced-motion. */
+  .solution-slide__copy {
+    transform: none !important;
   }
 }
 
