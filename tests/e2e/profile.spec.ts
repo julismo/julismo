@@ -319,47 +319,54 @@ test('reveals ARM entry solutions progressively and keeps its website available'
   await expect(armSite).toHaveAttribute('rel', 'noopener noreferrer');
 });
 
-test('keeps expanded ARM solutions within mobile width and logical tab order', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'mobile-390', 'Expanded disclosure geometry is covered once at the primary mobile viewport.');
+test('keeps expanded ARM solutions contained across supported widths', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'The width matrix runs once from the desktop project.');
+
+  for (const width of [280, 320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+
+    const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+    await disclosure.locator('summary[data-arm-summary]').click();
+    await expect(disclosure).toHaveAttribute('open', '');
+
+    const layout = await disclosure.evaluate((element) => {
+      const disclosureBox = element.getBoundingClientRect();
+      const items = Array.from(element.querySelectorAll<HTMLElement>('[data-solution-id]')).map((item) => {
+        const box = item.getBoundingClientRect();
+        return { left: box.left, right: box.right };
+      });
+
+      return {
+        disclosureLeft: disclosureBox.left,
+        disclosureRight: disclosureBox.right,
+        items,
+        scrollWidth: document.documentElement.scrollWidth,
+        viewportWidth: window.innerWidth,
+      };
+    });
+
+    expect(layout.scrollWidth, `${width}px overflow`).toBeLessThanOrEqual(layout.viewportWidth);
+    for (const item of layout.items) {
+      expect(item.left, `${width}px item left`).toBeGreaterThanOrEqual(layout.disclosureLeft);
+      expect(item.right, `${width}px item right`).toBeLessThanOrEqual(layout.disclosureRight);
+    }
+
+    await expect(disclosure).toHaveCSS('display', 'grid');
+    await expect(disclosure.locator('.solution-disclosure__panel')).toHaveCSS('display', 'grid');
+  }
+});
+
+test('keeps ARM disclosure keyboard order logical at mobile-390', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Keyboard order is covered at the primary mobile viewport.');
 
   await page.goto('/');
 
   const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
-  const summary = page.locator(
-    'details[data-solutions-disclosure][data-link-id="arm"] > summary[data-arm-summary]',
-  );
-  await expect(disclosure).toHaveCount(1);
-  await expect(summary).toHaveCount(1);
+  const summary = disclosure.locator('summary[data-arm-summary]');
   await summary.focus();
   await page.keyboard.press('Enter');
   await expect(disclosure).toHaveAttribute('open', '');
-  await expect(disclosure.locator('[data-solution-id]')).toHaveCount(3);
-
-  const layout = await disclosure.evaluate((element) => {
-    const disclosureBox = element.getBoundingClientRect();
-    const items = Array.from(element.querySelectorAll<HTMLElement>('[data-solution-id]')).map((item) => {
-      const box = item.getBoundingClientRect();
-      return { left: box.left, right: box.right };
-    });
-
-    return {
-      disclosureLeft: disclosureBox.left,
-      disclosureRight: disclosureBox.right,
-      items,
-      scrollWidth: document.documentElement.scrollWidth,
-      viewportWidth: window.innerWidth,
-    };
-  });
-
-  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.viewportWidth);
-  for (const item of layout.items) {
-    expect(item.left).toBeGreaterThanOrEqual(layout.disclosureLeft);
-    expect(item.right).toBeLessThanOrEqual(layout.disclosureRight);
-  }
-
-  await expect(disclosure).toHaveCSS('display', 'grid');
-  await expect(disclosure.locator('.solution-disclosure__panel')).toHaveCSS('display', 'grid');
-
   await summary.focus();
   await page.keyboard.press('Tab');
   await expect(disclosure.locator('[data-arm-site]')).toBeFocused();
@@ -372,9 +379,13 @@ test('keeps at least 32px of black breathing room after GitHub on desktop', asyn
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
+  const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  await disclosure.locator('summary[data-arm-summary]').click();
+  await expect(disclosure).toHaveAttribute('open', '');
+  await page.locator('[data-link-id="github"]').scrollIntoViewIfNeeded();
 
   const breathingRoom = await page.locator('[data-link-id="github"]').evaluate((github) => {
-    const githubBottom = github.getBoundingClientRect().bottom;
+    const githubBottom = window.scrollY + github.getBoundingClientRect().bottom;
     return document.documentElement.scrollHeight - githubBottom;
   });
 
@@ -399,6 +410,10 @@ test('keeps the ARM disclosure action static when reduced motion is requested', 
   await expect(summary).toHaveCount(1);
   await expect(actionIcon).toHaveCount(1);
   await expect(panel).toHaveCount(1);
+  const chevron = actionIcon.locator('path');
+  await expect(chevron).toHaveAttribute('d', 'm7 9 5 5 5-5');
+  await expect(chevron).toHaveAttribute('stroke-linecap', 'round');
+  await expect(chevron).toHaveAttribute('stroke-linejoin', 'round');
   await expect(disclosure).not.toHaveAttribute('open', '');
   await expect(actionIcon).toHaveCSS('transform', 'none');
 

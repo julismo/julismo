@@ -1,6 +1,6 @@
 # ARM Solutions Disclosure Design
 
-**Date:** 2026-08-09  
+**Date:** 2026-08-09
 **Status:** Approved for implementation by Julismo
 
 ## Goal
