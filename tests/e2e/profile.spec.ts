@@ -258,8 +258,8 @@ test('groups business solutions and digital presence without interrupting contac
     'label:SOLUÇÕES',
     'link:arm',
     'label:PRESENÇA',
-    'link:github',
     'link:linkedin',
+    'link:github',
   ]);
 });
 
