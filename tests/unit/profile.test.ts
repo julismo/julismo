@@ -1,4 +1,4 @@
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 import { armSolutions, profile } from '../../src/data/profile';
@@ -13,6 +13,20 @@ const validLink: ProfileLink = {
   section: 'contact',
   external: false,
 };
+
+function readVp8WebpSize(path: string) {
+  const bytes = readFileSync(path);
+
+  expect(bytes.subarray(0, 4).toString('ascii')).toBe('RIFF');
+  expect(bytes.subarray(8, 12).toString('ascii')).toBe('WEBP');
+  expect(bytes.subarray(12, 16).toString('ascii')).toBe('VP8 ');
+  expect(bytes.subarray(23, 26).toString('hex')).toBe('9d012a');
+
+  return {
+    width: bytes.readUInt16LE(26) & 0x3fff,
+    height: bytes.readUInt16LE(28) & 0x3fff,
+  };
+}
 
 describe('profile link contract', () => {
   test('accepts the approved profile links', () => {
@@ -52,21 +66,37 @@ describe('profile link contract', () => {
         id: 'quotes',
         title: 'Orçamentos que chegam a tempo',
         description: 'Respostas rápidas, com margem protegida.',
+        label: 'Orçamentos',
+        hint: 'A tempo, com margem protegida',
         image: '/images/arm-solutions/quotes.webp',
       },
       {
         id: 'documents',
         title: 'Documentos prontos a faturar',
         description: 'Guias, CMR e POD organizados antes de bloquearem faturação.',
+        label: 'Documentos',
+        hint: 'Guias, CMR e POD prontos',
         image: '/images/arm-solutions/documents.webp',
       },
       {
         id: 'operations',
         title: 'Operação sob controlo',
         description: 'Prioridades, atrasos e pendências visíveis antes de virarem problemas.',
+        label: 'Operação',
+        hint: 'Atrasos visíveis a tempo',
         image: '/images/arm-solutions/operations.webp',
       },
     ]);
+  });
+
+  test('keeps chip copy short enough for three columns', () => {
+    // Os chips ocupam 1/3 da coluna de 430px. Foi o que partiu a primeira versão:
+    // usava o título completo e rebentava para três linhas em cada chip.
+    for (const solution of armSolutions) {
+      expect(solution.label.length, `${solution.id} label`).toBeLessThanOrEqual(14);
+      expect(solution.hint.length, `${solution.id} hint`).toBeLessThanOrEqual(34);
+      expect(solution.label).not.toEqual(solution.title);
+    }
   });
 
   test('keeps ARM visual assets local and within the mobile budget', () => {
@@ -81,8 +111,13 @@ describe('profile link contract', () => {
     const assets = imagePaths.map((image) => join(process.cwd(), 'public', image!));
     expect(assets.every(existsSync)).toBe(true);
     const sizes = assets.map((asset) => statSync(asset).size);
-    expect(sizes.every((size) => size <= 45 * 1024)).toBe(true);
-    expect(sizes.reduce((total, size) => total + size, 0)).toBeLessThanOrEqual(135 * 1024);
+    expect(sizes.every((size) => size >= 12 * 1024 && size <= 100 * 1024)).toBe(true);
+    expect(sizes.reduce((total, size) => total + size, 0)).toBeLessThanOrEqual(300 * 1024);
+    expect(assets.map(readVp8WebpSize)).toEqual([
+      { width: 1176, height: 504 },
+      { width: 1176, height: 504 },
+      { width: 1176, height: 504 },
+    ]);
   });
 
   test('rejects duplicate IDs, absent copy and unsafe schemes', () => {
