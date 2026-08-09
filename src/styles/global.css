@@ -57,9 +57,6 @@ a {
   width: min(calc(100% - 40px), var(--content-width));
   margin: 0 auto;
   padding: 0 0 30px;
-  transform: perspective(850px) translate3d(var(--shift-x, 0), var(--shift-y, 0), 0) rotateX(var(--tilt-x, 0)) rotateY(var(--tilt-y, 0));
-  transform-origin: center;
-  will-change: transform;
 }
 
 @media (max-width: 480px) {
@@ -245,6 +242,12 @@ a {
 .link-list {
   display: grid;
   gap: 8px;
+}
+
+.link-list[data-profile-plane] {
+  transform: perspective(850px) translate3d(var(--shift-x, 0), var(--shift-y, 0), 0) rotateX(var(--tilt-x, 0)) rotateY(var(--tilt-y, 0));
+  transform-origin: center;
+  will-change: transform;
 }
 
 .link-section-label {
@@ -587,7 +590,7 @@ a {
     transition-duration: 1ms !important;
   }
 
-  .page-shell {
+  [data-profile-plane] {
     transform: none;
     will-change: auto;
   }
