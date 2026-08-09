@@ -1,7 +1,7 @@
 # ARM Solutions Imagery Design
 
 **Date:** 2026-08-09
-**Status:** Approved for specification review by Julismo
+**Status:** Approved for implementation by Julismo
 
 ## Goal
 
