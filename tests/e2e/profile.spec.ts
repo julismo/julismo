@@ -521,6 +521,50 @@ test('moves the card plane visibly while the hero stays fixed in Safari', async 
   expect(Math.abs(after.heroLeft - before.heroLeft)).toBeLessThanOrEqual(1);
 });
 
+test('moves the card plane visibly without shifting the hero in Safari', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Motion geometry is calibrated at the primary mobile viewport.');
+
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
+  await page.goto('/');
+
+  const before = await page.locator('body').evaluate((body) => {
+    const hero = body.querySelector<HTMLElement>('.profile-hero')!;
+    const whatsapp = body.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+
+    return {
+      heroLeft: hero.getBoundingClientRect().left,
+      whatsappLeft: whatsapp.getBoundingClientRect().left,
+    };
+  });
+
+  await page.getByRole('button', { name: 'Ativar movimento' }).click();
+  await page.evaluate(() => {
+    const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
+    window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 0 }));
+
+    for (let index = 0; index < 12; index += 1) {
+      window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 20 }));
+    }
+  });
+
+  await expect.poll(() => page.locator('[data-profile-plane]').evaluate((plane) =>
+    Math.abs(Number.parseFloat(plane.style.getPropertyValue('--shift-x'))),
+  )).toBeGreaterThan(0);
+
+  const after = await page.locator('body').evaluate((body) => {
+    const hero = body.querySelector<HTMLElement>('.profile-hero')!;
+    const whatsapp = body.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+
+    return {
+      heroLeft: hero.getBoundingClientRect().left,
+      whatsappLeft: whatsapp.getBoundingClientRect().left,
+    };
+  });
+
+  expect(Math.abs(after.whatsappLeft - before.whatsappLeft)).toBeGreaterThan(0);
+  expect(Math.abs(after.heroLeft - before.heroLeft)).toBeLessThanOrEqual(1);
+});
+
 test('reports unavailable motion when Safari grants permission but receives no sensor event', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Safari no-sensor feedback is covered once at mobile width.');
 
