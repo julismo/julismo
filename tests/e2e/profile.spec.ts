@@ -570,7 +570,9 @@ test('reports unavailable motion when Safari grants permission but receives no s
 
   await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Ativar movimento' }).click();
+  const initialConsent = page.getByRole('button', { name: 'Ativar movimento' });
+  await initialConsent.focus();
+  await page.keyboard.press('Enter');
 
   await expect.poll(() => page.locator('html').getAttribute('data-motion')).toBe('unavailable');
 
@@ -578,6 +580,34 @@ test('reports unavailable motion when Safari grants permission but receives no s
   await expect(consent).toBeVisible();
   await expect(consent).toBeDisabled();
   await expect(page.locator('[data-motion-status]')).toContainText('Abra esta página diretamente no Safari');
+  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
+
+  const plane = page.locator('[data-profile-plane]');
+  const motionVariables = await plane.evaluate((element) => ({
+    tiltX: element.style.getPropertyValue('--tilt-x'),
+    tiltY: element.style.getPropertyValue('--tilt-y'),
+    shiftX: element.style.getPropertyValue('--shift-x'),
+    shiftY: element.style.getPropertyValue('--shift-y'),
+  }));
+
+  await page.evaluate(() => {
+    const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
+    window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 20 }));
+  });
+  await page.evaluate(() => new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve())));
+
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'unavailable');
+  await expect(consent).toBeVisible();
+  await expect(consent).toBeDisabled();
+  await expect(consent).toHaveText('Movimento indisponível');
+  await expect(page.locator('[data-motion-status]')).toContainText('Abra esta página diretamente no Safari');
+  await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
+  await expect(plane.evaluate((element) => ({
+    tiltX: element.style.getPropertyValue('--tilt-x'),
+    tiltY: element.style.getPropertyValue('--tilt-y'),
+    shiftX: element.style.getPropertyValue('--shift-x'),
+    shiftY: element.style.getPropertyValue('--shift-y'),
+  }))).resolves.toEqual(motionVariables);
 });
 
 test('uses acceleration samples when iPhone does not emit orientation events', async ({ page }, testInfo) => {
