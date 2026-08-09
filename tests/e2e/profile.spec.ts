@@ -477,6 +477,65 @@ test('Safari waits for an orientation sample before marking motion active', asyn
   await expect(page.locator('[data-link-id="whatsapp"]')).toBeFocused();
 });
 
+test('moves the card plane visibly while the hero stays fixed in Safari', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Motion geometry is calibrated at the primary mobile viewport.');
+
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
+  await page.goto('/');
+
+  const before = await page.locator('body').evaluate((body) => {
+    const hero = body.querySelector<HTMLElement>('.profile-hero')!;
+    const whatsapp = body.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+
+    return {
+      heroLeft: hero.getBoundingClientRect().left,
+      whatsappLeft: whatsapp.getBoundingClientRect().left,
+    };
+  });
+
+  await page.getByRole('button', { name: 'Ativar movimento' }).click();
+  await page.evaluate(() => {
+    const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent;
+    window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 0 }));
+
+    for (let index = 0; index < 12; index += 1) {
+      window.dispatchEvent(new OrientationEvent('deviceorientation', { beta: 0, gamma: 20 }));
+    }
+  });
+
+  await expect.poll(() => page.locator('[data-profile-plane]').evaluate((plane) =>
+    Number.parseFloat(plane.style.getPropertyValue('--shift-x')),
+  )).toBeGreaterThanOrEqual(5);
+
+  const after = await page.locator('body').evaluate((body) => {
+    const hero = body.querySelector<HTMLElement>('.profile-hero')!;
+    const whatsapp = body.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!;
+
+    return {
+      heroLeft: hero.getBoundingClientRect().left,
+      whatsappLeft: whatsapp.getBoundingClientRect().left,
+    };
+  });
+
+  expect(after.whatsappLeft - before.whatsappLeft).toBeGreaterThanOrEqual(5);
+  expect(Math.abs(after.heroLeft - before.heroLeft)).toBeLessThanOrEqual(1);
+});
+
+test('reports unavailable motion when Safari grants permission but receives no sensor event', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Safari no-sensor feedback is covered once at mobile width.');
+
+  await emulateSafariMotionPermissions(page, { orientation: 'granted', motion: 'granted' });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Ativar movimento' }).click();
+
+  await expect.poll(() => page.locator('html').getAttribute('data-motion')).toBe('unavailable');
+
+  const consent = page.getByRole('button', { name: 'Movimento indisponível' });
+  await expect(consent).toBeVisible();
+  await expect(consent).toBeDisabled();
+  await expect(page.locator('[data-motion-status]')).toContainText('Abra esta página diretamente no Safari');
+});
+
 test('uses acceleration samples when iPhone does not emit orientation events', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Sensor fallback is covered once at mobile width.');
 
