@@ -392,10 +392,10 @@ test('ARM carousel supports manual keyboard selection', async ({ page }, testInf
   await expect(chip('quotes')).toHaveAttribute('aria-pressed', 'true');
 
   if (testInfo.project.name === 'desktop') {
-    // A página não muda escolhas do visitante sozinha: o conteúdo mantém-se legível
-    // até existir uma intenção explícita, mesmo depois do antigo intervalo de 8 s.
-    await page.waitForTimeout(8_300);
-    await expect(panel('quotes')).toHaveAttribute('data-active', 'true');
+    // Decisão do Julismo, confirmada por escrito a 2026-08-09: sem qualquer interacção,
+    // o carrossel roda a cada 8 s, para dar a conhecer as três soluções a quem não
+    // carrega em nada. Já foi removido duas vezes; não voltar a inverter sem palavra dele.
+    await expect(panel('documents')).toHaveAttribute('data-active', 'true', { timeout: 12_000 });
   }
 
   await chip('operations').click();
@@ -418,6 +418,12 @@ test('ARM carousel supports manual keyboard selection', async ({ page }, testInf
   await expect(tab('documents')).toBeFocused();
   await expect(panel('documents')).toHaveAttribute('data-active', 'true');
 
+  if (testInfo.project.name === 'desktop') {
+    // A outra metade da regra: a partir do momento em que o visitante escolhe, a rotação
+    // pára de vez. Intenção explícita ganha à automática.
+    await page.waitForTimeout(8_300);
+    await expect(panel('documents')).toHaveAttribute('data-active', 'true');
+  }
 });
 
 test('keeps expanded ARM solutions contained across supported widths', async ({ page }, testInfo) => {
@@ -466,7 +472,7 @@ test('keeps expanded ARM solutions contained across supported widths', async ({ 
   }
 });
 
-test('keeps ARM solution choices legible in a 2+1 grid', async ({ page }, testInfo) => {
+test('keeps ARM solution choices legible across widths', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'The width matrix runs once from the desktop project.');
 
   for (const width of [280, 320, 390, 430, 1440]) {
@@ -494,9 +500,20 @@ test('keeps ARM solution choices legible in a 2+1 grid', async ({ page }, testIn
 
     expect(layout.scrollWidth, `${width}px overflow`).toBeLessThanOrEqual(layout.viewportWidth);
     expect(layout.items).toHaveLength(3);
-    expect(Math.abs(layout.items[0]!.top - layout.items[1]!.top), `${width}px first row`).toBeLessThanOrEqual(1);
-    expect(layout.items[2]!.top, `${width}px second row`).toBeGreaterThan(layout.items[0]!.bottom + 3);
-    expect(layout.items[2]!.width, `${width}px full-width final chip`).toBeGreaterThanOrEqual(layout.items[0]!.width * 1.9);
+
+    // As três soluções lêem-se como um conjunto, por isso ficam lado a lado. O 2+1 só
+    // entra abaixo de 340px, onde três colunas obrigariam a cortar palavras: o Julismo
+    // reportou o 2+1 em mobile como desequilibrado, e tinha razão.
+    if (width <= 340) {
+      expect(Math.abs(layout.items[0]!.top - layout.items[1]!.top), `${width}px first row`).toBeLessThanOrEqual(1);
+      expect(layout.items[2]!.top, `${width}px second row`).toBeGreaterThan(layout.items[0]!.bottom + 3);
+      expect(layout.items[2]!.width, `${width}px full-width final chip`).toBeGreaterThanOrEqual(layout.items[0]!.width * 1.9);
+    } else {
+      for (const item of layout.items) {
+        expect(Math.abs(item.top - layout.items[0]!.top), `${width}px single row`).toBeLessThanOrEqual(1);
+      }
+      expect(Math.abs(layout.items[2]!.width - layout.items[0]!.width), `${width}px equal columns`).toBeLessThanOrEqual(2);
+    }
 
     for (const item of layout.items) {
       expect(item.left, `${width}px item left`).toBeGreaterThanOrEqual(layout.list.left);

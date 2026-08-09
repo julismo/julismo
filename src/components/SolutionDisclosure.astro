@@ -129,7 +129,31 @@ const { link, solutions } = Astro.props;
 
     if (!carousel || slides.length < 2) return;
 
+    // Autoavanço a 8 s. DECISÃO DO JULISMO, confirmada por escrito a 2026-08-09 depois de
+    // ter sido removida duas vezes: a rotação existe para dar a conhecer as três soluções
+    // a quem não carrega em nada. Não remover sem palavra dele. As três regras à volta:
+    // uma escolha manual cancela a rotação de vez, o rato em cima pausa-a, e com
+    // prefers-reduced-motion nunca chega a arrancar.
+    const SLIDE_MS = 8000;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
     let index = 0;
+    let timer: number | undefined;
+    let chosenByVisitor = false;
+
+    const stop = () => {
+      if (timer !== undefined) window.clearInterval(timer);
+      timer = undefined;
+    };
+
+    const start = () => {
+      stop();
+      if (chosenByVisitor || reduced.matches || !disclosure.hasAttribute('open')) return;
+      timer = window.setInterval(() => {
+        index = (index + 1) % slides.length;
+        paint();
+      }, SLIDE_MS);
+    };
 
     const paint = () => {
       slides.forEach((slide, position) => {
@@ -152,13 +176,20 @@ const { link, solutions } = Astro.props;
       });
     };
 
-    const goTo = (next: number) => {
+    const goTo = (next: number, byVisitor = true) => {
       index = ((next % slides.length) + slides.length) % slides.length;
+      if (byVisitor) {
+        chosenByVisitor = true;
+        stop();
+      }
       paint();
     };
 
     dots.forEach((dot, position) => dot.addEventListener('click', () => goTo(position)));
     chips.forEach((chip, position) => chip.addEventListener('click', () => goTo(position)));
+
+    carousel.addEventListener('pointerenter', stop);
+    carousel.addEventListener('pointerleave', start);
 
     // Padrão ARIA de tabs: setas navegam dentro do tablist, Home e End vão aos extremos.
     dots.forEach((dot) => {
@@ -182,13 +213,19 @@ const { link, solutions } = Astro.props;
     disclosure.addEventListener('toggle', () => {
       if (disclosure.hasAttribute('open')) {
         hydrateImages();
-        goTo(0);
+        chosenByVisitor = false;
+        goTo(0, false);
+        start();
+      } else {
+        stop();
       }
     });
 
     if (disclosure.hasAttribute('open')) hydrateImages();
 
+    reduced.addEventListener('change', start);
     paint();
+    start();
   });
 </script>
 </details>

@@ -555,17 +555,26 @@ a {
 
 /* ---- Chips: também são a navegação do carrossel ---- */
 
+/* Três colunas: as três soluções lêem-se como um conjunto, de relance. Em duas colunas
+   o terceiro chip fica sozinho a ocupar a linha toda e desequilibra o bloco. */
 .solution-disclosure__list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.solution-disclosure__list > li:last-child {
-  grid-column: 1 / -1;
+/* Só abaixo de 340px é que três colunas deixam de caber sem cortar palavras. */
+@media (max-width: 340px) {
+  .solution-disclosure__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .solution-disclosure__list > li:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .solution-disclosure__item {
@@ -611,18 +620,26 @@ a {
 
 /* ---- CTA: passa de link de texto a cartão, como os outros destinos da página ---- */
 
+/* Mesmo material dos outros destinos da página: borda, fundo, raio, sombra e altura
+   iguais aos de `.link-card`. Só a grelha difere, porque este não tem ícone à esquerda. */
 .solution-disclosure__site-link {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 11px;
-  min-height: 46px;
+  min-height: 66px;
   padding: 8px 13px;
-  border: 1px solid rgb(255 255 255 / 16%);
-  border-radius: 12px;
-  background: linear-gradient(115deg, #2a2a30, #171719);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: linear-gradient(115deg, rgb(31 31 35 / 96%), rgb(17 17 19 / 94%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3.5%);
   color: #eeeeef;
   text-decoration: none;
+  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.solution-disclosure__site-link:active {
+  transform: translateY(0) scale(0.992);
 }
 
 .solution-disclosure__site-copy strong {
@@ -634,16 +651,24 @@ a {
 
 .solution-disclosure__site-icon {
   display: grid;
+  width: 32px;
+  height: 32px;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  border: 1px solid rgb(255 255 255 / 17%);
   border-radius: 50%;
-  background: rgb(255 255 255 / 7%);
-  color: #cfcfd6;
+  background: linear-gradient(145deg, rgb(255 255 255 / 10%), rgb(0 0 0 / 22%));
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 8%), 0 3px 10px rgb(0 0 0 / 24%);
+  color: #e8e8ec;
 }
 
 .solution-disclosure__site-link:hover {
-  border-color: rgb(255 255 255 / 26%);
+  border-color: rgb(255 255 255 / 25%);
+  transform: translateY(-1px);
+}
+
+.solution-disclosure__site-link:hover .solution-disclosure__site-icon {
+  border-color: rgb(255 255 255 / 34%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 16%), rgb(0 0 0 / 20%));
 }
 
 .solution-disclosure__site-link:focus-visible {
