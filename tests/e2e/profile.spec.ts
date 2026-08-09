@@ -236,7 +236,10 @@ test('renders the approved identity and six complete action cards', async ({ pag
   await expect(page.getByRole('link')).toHaveCount(6);
   await expect(
     page.getByRole('link', { name: /Falar comigo.*WhatsApp.*resposta direta/ }),
-  ).toHaveAttribute('href', 'https://api.whatsapp.com/send?phone=351933751885');
+  ).toHaveAttribute(
+    'href',
+    'https://api.whatsapp.com/send?phone=351933751885&text=Ol%C3%A1%2C%20Julismo.%20Vi%20o%20teu%20perfil%20e%20gostava%20de%20falar%20contigo.',
+  );
 });
 
 test('groups business solutions and digital presence without interrupting contacts', async ({ page }) => {
@@ -345,7 +348,11 @@ test('keeps all six destinations ordered and secures external navigation', async
   await page.goto('/');
 
   const expectedLinks = [
-    { id: 'whatsapp', href: 'https://api.whatsapp.com/send?phone=351933751885', external: false },
+    {
+      id: 'whatsapp',
+      href: 'https://api.whatsapp.com/send?phone=351933751885&text=Ol%C3%A1%2C%20Julismo.%20Vi%20o%20teu%20perfil%20e%20gostava%20de%20falar%20contigo.',
+      external: false,
+    },
     { id: 'cal', href: 'https://cal.com/julismo-costa-3nxpms/30min', external: true },
     { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
     { id: 'arm', href: 'https://arm-lda.com/', external: true },

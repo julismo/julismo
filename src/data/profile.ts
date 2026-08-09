@@ -12,7 +12,7 @@ export const profile = {
       id: 'whatsapp',
       title: 'Falar comigo',
       description: 'WhatsApp · resposta direta',
-      href: 'https://api.whatsapp.com/send?phone=351933751885',
+      href: 'https://api.whatsapp.com/send?phone=351933751885&text=Ol%C3%A1%2C%20Julismo.%20Vi%20o%20teu%20perfil%20e%20gostava%20de%20falar%20contigo.',
       icon: 'whatsapp',
       section: 'contact',
       external: false,
