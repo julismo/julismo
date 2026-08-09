@@ -25,3 +25,12 @@ testsprite_tests/tmp/config.json
 
 .vercel
 .env*
+
+# Claude local (/scaffold 2026-08-09)
+.claude/
+.playwright-mcp/
+docs/plans/
+docs/sketches/
+memory/
+settings.local.json
+*.log
