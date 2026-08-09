@@ -393,19 +393,19 @@ test('keeps the ARM disclosure action static when reduced motion is requested', 
 
     const timingInSeconds = (element: HTMLElement) => {
       const styles = getComputedStyle(element);
-      const maxDurationInSeconds = (value: string) =>
+      const maxTimingMagnitudeInSeconds = (value: string) =>
         Math.max(
           ...value.split(',').map((duration) => {
-            const numericValue = Number.parseFloat(duration);
-            return duration.trim().endsWith('ms') ? numericValue / 1000 : numericValue;
+            const numericMagnitude = Math.abs(Number.parseFloat(duration));
+            return duration.trim().endsWith('ms') ? numericMagnitude / 1000 : numericMagnitude;
           }),
         );
 
       return {
-        animationDelay: maxDurationInSeconds(styles.animationDelay),
-        animationDuration: maxDurationInSeconds(styles.animationDuration),
-        transitionDelay: maxDurationInSeconds(styles.transitionDelay),
-        transitionDuration: maxDurationInSeconds(styles.transitionDuration),
+        animationDelay: maxTimingMagnitudeInSeconds(styles.animationDelay),
+        animationDuration: maxTimingMagnitudeInSeconds(styles.animationDuration),
+        transitionDelay: maxTimingMagnitudeInSeconds(styles.transitionDelay),
+        transitionDuration: maxTimingMagnitudeInSeconds(styles.transitionDuration),
       };
     };
 
