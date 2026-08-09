@@ -391,24 +391,38 @@ test('keeps the ARM disclosure action static when reduced motion is requested', 
     );
     if (!action || !panel) throw new Error('O estado da divulgação ARM não está disponível.');
 
-    const durationInSeconds = (element: HTMLElement) =>
-      Math.max(
-        ...getComputedStyle(element).transitionDuration.split(',').map((duration) => {
-          const value = Number.parseFloat(duration);
-          return duration.trim().endsWith('ms') ? value / 1000 : value;
-        }),
-      );
+    const timingInSeconds = (element: HTMLElement) => {
+      const styles = getComputedStyle(element);
+      const maxDurationInSeconds = (value: string) =>
+        Math.max(
+          ...value.split(',').map((duration) => {
+            const numericValue = Number.parseFloat(duration);
+            return duration.trim().endsWith('ms') ? numericValue / 1000 : numericValue;
+          }),
+        );
+
+      return {
+        animationDelay: maxDurationInSeconds(styles.animationDelay),
+        animationDuration: maxDurationInSeconds(styles.animationDuration),
+        transitionDelay: maxDurationInSeconds(styles.transitionDelay),
+        transitionDuration: maxDurationInSeconds(styles.transitionDuration),
+      };
+    };
 
     return {
       actionTransform: getComputedStyle(action).transform,
-      actionTransitionDuration: durationInSeconds(action),
-      panelTransitionDuration: durationInSeconds(panel),
+      actionTiming: timingInSeconds(action),
+      panelTiming: timingInSeconds(panel),
     };
   });
 
   expect(state.actionTransform).toBe('matrix(-1, 0, 0, -1, 0, 0)');
-  expect(state.actionTransitionDuration).toBeLessThanOrEqual(0.001);
-  expect(state.panelTransitionDuration).toBeLessThanOrEqual(0.001);
+  for (const timing of [state.actionTiming, state.panelTiming]) {
+    expect(timing.animationDuration).toBeLessThanOrEqual(0.001);
+    expect(timing.animationDelay).toBeLessThanOrEqual(0.001);
+    expect(timing.transitionDuration).toBeLessThanOrEqual(0.001);
+    expect(timing.transitionDelay).toBeLessThanOrEqual(0.001);
+  }
 });
 
 test('ends cleanly without a name sign-off', async ({ page }) => {
