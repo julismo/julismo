@@ -26,32 +26,169 @@ const { link, solutions } = Astro.props;
       </svg>
     </span>
   </summary>
+
   <div class="solution-disclosure__panel">
-    <ul class="solution-disclosure__list" aria-label="Soluções ARM">
-      {
-        solutions.map((solution) => (
-          <li class="solution-disclosure__item" data-solution-id={solution.id}>
-            <strong>{solution.title}</strong>
-            <span>{solution.description}</span>
-            <span class="solution-disclosure__visual" aria-hidden="true">
+    <div class="solution-carousel" data-solution-carousel>
+      <div class="solution-carousel__viewport">
+        {
+          solutions.map((solution, index) => (
+            <article
+              id={`solution-slide-${solution.id}`}
+              class="solution-slide"
+              role="tabpanel"
+              aria-labelledby={`solution-tab-${solution.id}`}
+              data-solution-id={solution.id}
+              data-solution-slide={index}
+              data-active={index === 0 ? 'true' : 'false'}
+              aria-hidden={index === 0 ? 'false' : 'true'}
+            >
+              {/* Só o primeiro banner tem `src` no HTML. `loading="lazy"` não chega: o browser
+                  descarrega na mesma os três com a secção fechada, e a maioria das visitas
+                  nunca a abre. Os outros dois entram na primeira abertura, via data-src. */}
               <img
-                class="solution-disclosure__image"
+                class="solution-slide__image"
                 data-solution-image
-                src={solution.image}
+                src={index === 0 ? solution.image : undefined}
+                data-src={index === 0 ? undefined : solution.image}
                 alt=""
                 aria-hidden="true"
-                width="256"
-                height="256"
+                width="1176"
+                height="504"
                 loading="lazy"
                 decoding="async"
               />
-            </span>
+              <div class="solution-slide__copy">
+                <strong>{solution.title}</strong>
+                <span>{solution.description}</span>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="solution-dots" data-solution-dots role="tablist" aria-label="Soluções ARM">
+      {
+        solutions.map((solution, index) => (
+          <button
+            id={`solution-tab-${solution.id}`}
+            type="button"
+            class="solution-dots__dot"
+            data-solution-dot={index}
+            data-active={index === 0 ? 'true' : 'false'}
+            role="tab"
+            aria-selected={index === 0 ? 'true' : 'false'}
+            aria-controls={`solution-slide-${solution.id}`}
+            aria-label={solution.title}
+            tabindex={index === 0 ? 0 : -1}
+          />
+        ))
+      }
+    </div>
+
+    <ul class="solution-disclosure__list" aria-label="Soluções ARM">
+      {
+        solutions.map((solution, index) => (
+          <li>
+            <button
+              type="button"
+              class="solution-disclosure__item"
+              data-solution-chip={index}
+              data-solution-chip-id={solution.id}
+              data-active={index === 0 ? 'true' : 'false'}
+              aria-pressed={index === 0 ? 'true' : 'false'}
+            >
+              <strong>{solution.label}</strong>
+              <span>{solution.hint}</span>
+            </button>
           </li>
         ))
       }
     </ul>
+
     <a class="solution-disclosure__site-link" data-arm-site href={link.href} target="_blank" rel="noopener noreferrer">
-      Conhecer a ARM Solutions
+      <span class="solution-disclosure__site-copy">
+        <strong>Ir para o site da ARM</strong>
+      </span>
+      <span class="solution-disclosure__site-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="13" height="13">
+          <path d="M8 16 16 8M9.5 8H16v6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
     </a>
   </div>
+
+  <!-- Dentro da <details> de propósito: colocado a seguir, o Astro renderiza-o como irmão
+       e o <script> passa a ser filho directo de .link-list, o que estraga a estrutura da lista. -->
+  <script>
+  document.querySelectorAll<HTMLElement>('[data-solutions-disclosure]').forEach((disclosure) => {
+    const carousel = disclosure.querySelector<HTMLElement>('[data-solution-carousel]');
+    const slides = [...disclosure.querySelectorAll<HTMLElement>('[data-solution-slide]')];
+    const dots = [...disclosure.querySelectorAll<HTMLButtonElement>('[data-solution-dot]')];
+    const chips = [...disclosure.querySelectorAll<HTMLButtonElement>('[data-solution-chip]')];
+
+    if (!carousel || slides.length < 2) return;
+
+    let index = 0;
+
+    const paint = () => {
+      slides.forEach((slide, position) => {
+        const on = position === index;
+        slide.dataset.active = String(on);
+        slide.setAttribute('aria-hidden', String(!on));
+      });
+      dots.forEach((dot, position) => {
+        const on = position === index;
+        dot.dataset.active = String(on);
+        dot.setAttribute('aria-selected', String(on));
+        // Roving tabindex: o grupo de bolinhas é UMA paragem de tabulação, e as setas
+        // movem-se lá dentro. Sem isto seriam três paragens a fazer o que os chips já fazem.
+        dot.tabIndex = on ? 0 : -1;
+      });
+      chips.forEach((chip, position) => {
+        const on = position === index;
+        chip.dataset.active = String(on);
+        chip.setAttribute('aria-pressed', String(on));
+      });
+    };
+
+    const goTo = (next: number) => {
+      index = ((next % slides.length) + slides.length) % slides.length;
+      paint();
+    };
+
+    dots.forEach((dot, position) => dot.addEventListener('click', () => goTo(position)));
+    chips.forEach((chip, position) => chip.addEventListener('click', () => goTo(position)));
+
+    // Padrão ARIA de tabs: setas navegam dentro do tablist, Home e End vão aos extremos.
+    dots.forEach((dot) => {
+      dot.addEventListener('keydown', (event) => {
+        const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+        const jump = event.key === 'Home' ? 0 : event.key === 'End' ? slides.length - 1 : undefined;
+        if (step === undefined && jump === undefined) return;
+        event.preventDefault();
+        goTo(jump ?? index + step!);
+        dots[index]!.focus();
+      });
+    });
+
+    const hydrateImages = () => {
+      disclosure.querySelectorAll<HTMLImageElement>('[data-solution-image][data-src]').forEach((image) => {
+        image.src = image.dataset.src ?? '';
+        delete image.dataset.src;
+      });
+    };
+
+    disclosure.addEventListener('toggle', () => {
+      if (disclosure.hasAttribute('open')) {
+        hydrateImages();
+        goTo(0);
+      }
+    });
+
+    if (disclosure.hasAttribute('open')) hydrateImages();
+
+    paint();
+  });
+</script>
 </details>

@@ -293,7 +293,7 @@ test('groups business solutions and digital presence without interrupting contac
   await expect(page.locator('[data-link-id="github"]')).toBeFocused();
 });
 
-test('reveals ARM entry solutions progressively and keeps its website available', async ({ page }) => {
+test('reveals ARM entry solutions progressively and keeps its website available', async ({ page }, testInfo) => {
   await page.goto('/');
 
   const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
@@ -309,14 +309,26 @@ test('reveals ARM entry solutions progressively and keeps its website available'
   await page.keyboard.press('Enter');
   await expect(disclosure).toHaveAttribute('open', '');
   await expect(disclosure.locator('[data-solution-id]')).toHaveCount(3);
+
+  // As três soluções são slides de um carrossel: só a activa está visível de cada vez.
+  // Os chips, esses, estão sempre os três visíveis e servem de navegação.
+  await expect(disclosure.locator('[data-solution-slide="0"]')).toHaveAttribute('data-active', 'true');
   await expect(disclosure.getByText('Orçamentos que chegam a tempo')).toBeVisible();
-  await expect(disclosure.getByText('Documentos prontos a faturar')).toBeVisible();
-  await expect(disclosure.getByText('Operação sob controlo')).toBeVisible();
+  await expect(disclosure.locator('[data-solution-slide="1"]')).toHaveAttribute('data-active', 'false');
+  await expect(disclosure.locator('[data-solution-slide="2"]')).toHaveAttribute('data-active', 'false');
+
+  const chips = disclosure.locator('[data-solution-chip]');
+  await expect(chips).toHaveCount(3);
+  await expect(chips.nth(0)).toHaveText(/Orçamentos/);
+  await expect(chips.nth(1)).toHaveText(/Documentos/);
+  await expect(chips.nth(2)).toHaveText(/Operação/);
+  await expect(disclosure.locator('[data-solution-dot]')).toHaveCount(3);
 
   const visuals = disclosure.locator('[data-solution-image]');
   await expect(visuals).toHaveCount(3);
   const visualMetadata = await visuals.evaluateAll((images) => images.map((image) => ({
     src: image.getAttribute('src'),
+    dataSrc: image.getAttribute('data-src'),
     alt: image.getAttribute('alt'),
     ariaHidden: image.getAttribute('aria-hidden'),
     width: image.getAttribute('width'),
@@ -324,18 +336,86 @@ test('reveals ARM entry solutions progressively and keeps its website available'
     loading: image.getAttribute('loading'),
     decoding: image.getAttribute('decoding'),
   })));
-  expect(visualMetadata).toEqual(
-    [
-      { src: '/images/arm-solutions/quotes.webp', alt: '', ariaHidden: 'true', width: '256', height: '256', loading: 'lazy', decoding: 'async' },
-      { src: '/images/arm-solutions/documents.webp', alt: '', ariaHidden: 'true', width: '256', height: '256', loading: 'lazy', decoding: 'async' },
-      { src: '/images/arm-solutions/operations.webp', alt: '', ariaHidden: 'true', width: '256', height: '256', loading: 'lazy', decoding: 'async' },
-    ],
-  );
+
+  // Só o primeiro banner tem `src` no HTML servido. `loading="lazy"` não impede o download:
+  // com a secção fechada o browser puxava os três, e a maioria das visitas nunca a abre.
+  // Os outros dois são hidratados por JS na primeira abertura.
+  for (const [position, image] of visualMetadata.entries()) {
+    expect(image, `banner ${position} metadata`).toMatchObject({
+      alt: '',
+      ariaHidden: 'true',
+      width: '1176',
+      height: '504',
+      loading: 'lazy',
+      decoding: 'async',
+    });
+  }
+  expect(visualMetadata[0]!.src).toBe('/images/arm-solutions/quotes.webp');
+  expect(visualMetadata[0]!.dataSrc).toBeNull();
+
+  // Com JS, abrir a secção hidrata os três. Sem JS não há rotação, por isso os outros dois
+  // nunca chegam a ser mostrados e não terem `src` é o comportamento correcto.
+  if (testInfo.project.name !== 'no-js') {
+    await expect
+      .poll(async () => (await visuals.evaluateAll((images) => images.map((i) => i.getAttribute('src')))).filter(Boolean).length)
+      .toBe(3);
+  } else {
+    expect(visualMetadata[1]!.src).toBeNull();
+    expect(visualMetadata[1]!.dataSrc).toBe('/images/arm-solutions/documents.webp');
+    expect(visualMetadata[2]!.dataSrc).toBe('/images/arm-solutions/operations.webp');
+  }
 
   const armSite = disclosure.locator('[data-arm-site]');
   await expect(armSite).toHaveAttribute('href', 'https://arm-lda.com/');
   await expect(armSite).toHaveAttribute('target', '_blank');
   await expect(armSite).toHaveAttribute('rel', 'noopener noreferrer');
+});
+
+test('ARM carousel supports manual keyboard selection', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'no-js', 'Carousel navigation is a JS enhancement; without it the first solution stays put.');
+
+  await page.goto('/');
+
+  const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  await disclosure.locator('summary[data-arm-summary]').click();
+  await expect(disclosure).toHaveAttribute('open', '');
+
+  const panel = (id: 'quotes' | 'documents' | 'operations') => disclosure.locator(`#solution-slide-${id}`);
+  const tab = (id: 'quotes' | 'documents' | 'operations') => disclosure.locator(`#solution-tab-${id}`);
+  const chip = (id: 'quotes' | 'documents' | 'operations') => disclosure.locator(`[data-solution-chip-id="${id}"]`);
+
+  await expect(panel('quotes')).toHaveAttribute('role', 'tabpanel');
+  await expect(panel('quotes')).toHaveAttribute('aria-labelledby', 'solution-tab-quotes');
+  await expect(tab('quotes')).toHaveAttribute('role', 'tab');
+  await expect(tab('quotes')).toHaveAttribute('aria-controls', 'solution-slide-quotes');
+  await expect(tab('quotes')).toHaveAttribute('aria-selected', 'true');
+  await expect(chip('quotes')).toHaveAttribute('aria-pressed', 'true');
+
+  await chip('operations').click();
+  await expect(panel('operations')).toHaveAttribute('data-active', 'true');
+  await expect(panel('quotes')).toHaveAttribute('data-active', 'false');
+  await expect(tab('operations')).toHaveAttribute('aria-selected', 'true');
+  await expect(chip('operations')).toHaveAttribute('aria-pressed', 'true');
+  await expect(chip('quotes')).toHaveAttribute('aria-pressed', 'false');
+
+  await tab('documents').focus();
+  await page.keyboard.press('End');
+  await expect(tab('operations')).toBeFocused();
+  await expect(panel('operations')).toHaveAttribute('data-active', 'true');
+
+  await page.keyboard.press('Home');
+  await expect(tab('quotes')).toBeFocused();
+  await expect(panel('quotes')).toHaveAttribute('data-active', 'true');
+
+  await page.keyboard.press('ArrowRight');
+  await expect(tab('documents')).toBeFocused();
+  await expect(panel('documents')).toHaveAttribute('data-active', 'true');
+
+  if (testInfo.project.name === 'desktop') {
+    await chip('operations').click();
+    await page.waitForTimeout(8_300);
+    await expect(panel('operations')).toHaveAttribute('data-active', 'true');
+  }
 });
 
 test('keeps expanded ARM solutions contained across supported widths', async ({ page }, testInfo) => {
@@ -387,6 +467,25 @@ test('keeps ARM disclosure keyboard order logical at mobile-390', async ({ page 
   await page.keyboard.press('Enter');
   await expect(disclosure).toHaveAttribute('open', '');
   await summary.focus();
+
+  // O tablist das bolinhas é UMA paragem de tabulação (roving tabindex): as setas
+  // navegam lá dentro. Depois vêm os três chips, o CTA, e só então o link seguinte.
+  await page.keyboard.press('Tab');
+  await expect(disclosure.locator('[data-solution-dot="0"]')).toBeFocused();
+  await expect(disclosure.locator('[data-solution-dot="1"]')).toHaveAttribute('tabindex', '-1');
+  await expect(disclosure.locator('[data-solution-dot="2"]')).toHaveAttribute('tabindex', '-1');
+
+  await page.keyboard.press('ArrowRight');
+  await expect(disclosure.locator('[data-solution-dot="1"]')).toBeFocused();
+  await expect(disclosure.locator('[data-solution-slide="1"]')).toHaveAttribute('data-active', 'true');
+  await page.keyboard.press('Home');
+  await expect(disclosure.locator('[data-solution-slide="0"]')).toHaveAttribute('data-active', 'true');
+
+  for (let chip = 0; chip < 3; chip += 1) {
+    await page.keyboard.press('Tab');
+    await expect(disclosure.locator(`[data-solution-chip="${chip}"]`)).toBeFocused();
+  }
+
   await page.keyboard.press('Tab');
   await expect(disclosure.locator('[data-arm-site]')).toBeFocused();
   await page.keyboard.press('Tab');

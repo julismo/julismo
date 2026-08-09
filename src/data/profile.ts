@@ -2,23 +2,31 @@ import { assertProfileLinks, type ProfileLink } from '../lib/profile';
 
 export const siteUrl = new URL('https://julismo.vercel.app/');
 
+// `title` e `description` vivem por cima do banner. `label` e `hint` são os chips, que também
+// navegam o carrossel: têm de caber em 1/3 da coluna, por isso são curtos de propósito.
 export const armSolutions = [
   {
     id: 'quotes',
     title: 'Orçamentos que chegam a tempo',
     description: 'Respostas rápidas, com margem protegida.',
+    label: 'Orçamentos',
+    hint: 'A tempo, com margem protegida',
     image: '/images/arm-solutions/quotes.webp',
   },
   {
     id: 'documents',
     title: 'Documentos prontos a faturar',
     description: 'Guias, CMR e POD organizados antes de bloquearem faturação.',
+    label: 'Documentos',
+    hint: 'Guias, CMR e POD prontos',
     image: '/images/arm-solutions/documents.webp',
   },
   {
     id: 'operations',
     title: 'Operação sob controlo',
     description: 'Prioridades, atrasos e pendências visíveis antes de virarem problemas.',
+    label: 'Operação',
+    hint: 'Atrasos visíveis a tempo',
     image: '/images/arm-solutions/operations.webp',
   },
 ] as const;
