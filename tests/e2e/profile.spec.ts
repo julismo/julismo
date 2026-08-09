@@ -264,6 +264,22 @@ test('groups business solutions and digital presence without interrupting contac
     'link:linkedin',
     'link:github',
   ]);
+
+  const presenceGeometry = await page.evaluate(() => {
+    const linkedIn = document.querySelector<HTMLElement>('[data-link-id="linkedin"]')!;
+    const github = document.querySelector<HTMLElement>('[data-link-id="github"]')!;
+    return {
+      linkedInTop: linkedIn.getBoundingClientRect().top,
+      githubTop: github.getBoundingClientRect().top,
+    };
+  });
+  expect(presenceGeometry.linkedInTop).toBeLessThan(presenceGeometry.githubTop);
+
+  await page.locator('[data-link-id="arm"]').focus();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('[data-link-id="linkedin"]')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('[data-link-id="github"]')).toBeFocused();
 });
 
 test('ends cleanly without a name sign-off', async ({ page }) => {
@@ -356,8 +372,8 @@ test('keeps all six destinations ordered and secures external navigation', async
     { id: 'cal', href: 'https://cal.com/julismo-costa-3nxpms/30min', external: true },
     { id: 'email', href: 'mailto:julismocosta@gmail.com', external: false },
     { id: 'arm', href: 'https://arm-lda.com/', external: true },
-    { id: 'github', href: 'https://github.com/julismo', external: true },
     { id: 'linkedin', href: 'https://www.linkedin.com/in/julismocosta/', external: true },
+    { id: 'github', href: 'https://github.com/julismo', external: true },
   ];
 
   for (const link of expectedLinks) {
