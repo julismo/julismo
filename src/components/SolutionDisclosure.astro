@@ -1,0 +1,231 @@
+---
+import type { armSolutions } from '../data/profile';
+import type { ProfileLink } from '../lib/profile';
+import BrandIcon from './BrandIcon.astro';
+
+interface Props {
+  link: ProfileLink;
+  solutions: typeof armSolutions;
+}
+
+const { link, solutions } = Astro.props;
+---
+
+<details class="solution-disclosure" data-solutions-disclosure data-link-id={link.id}>
+  <summary class="link-card link-card--work" data-arm-summary>
+    <span class="link-card__icon">
+      <BrandIcon name={link.icon} />
+    </span>
+    <span class="link-card__copy">
+      <strong>{link.title}</strong>
+      <small>{link.description}</small>
+    </span>
+    <span class="link-card__action" aria-hidden="true">
+      <svg class="link-card__action-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="m7 9 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </span>
+  </summary>
+
+  <div class="solution-disclosure__panel">
+    <div class="solution-carousel" data-solution-carousel>
+      <div class="solution-carousel__viewport">
+        {
+          solutions.map((solution, index) => (
+            <article
+              id={`solution-slide-${solution.id}`}
+              class="solution-slide"
+              role="tabpanel"
+              aria-labelledby={`solution-tab-${solution.id}`}
+              data-solution-id={solution.id}
+              data-solution-slide={index}
+              data-active={index === 0 ? 'true' : 'false'}
+              aria-hidden={index === 0 ? 'false' : 'true'}
+            >
+              {/* Só o primeiro banner tem `src` no HTML. `loading="lazy"` não chega: o browser
+                  descarrega na mesma os três com a secção fechada, e a maioria das visitas
+                  nunca a abre. Os outros dois entram na primeira abertura, via data-src. */}
+              <img
+                class="solution-slide__image"
+                data-solution-image
+                src={index === 0 ? solution.image : undefined}
+                data-src={index === 0 ? undefined : solution.image}
+                alt=""
+                aria-hidden="true"
+                width="1176"
+                height="504"
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="solution-slide__copy">
+                <strong>{solution.title}</strong>
+                <span>{solution.description}</span>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="solution-dots" data-solution-dots role="tablist" aria-label="Soluções ARM">
+      {
+        solutions.map((solution, index) => (
+          <button
+            id={`solution-tab-${solution.id}`}
+            type="button"
+            class="solution-dots__dot"
+            data-solution-dot={index}
+            data-active={index === 0 ? 'true' : 'false'}
+            role="tab"
+            aria-selected={index === 0 ? 'true' : 'false'}
+            aria-controls={`solution-slide-${solution.id}`}
+            aria-label={solution.title}
+            tabindex={index === 0 ? 0 : -1}
+          />
+        ))
+      }
+    </div>
+
+    <ul class="solution-disclosure__list" aria-label="Soluções ARM">
+      {
+        solutions.map((solution, index) => (
+          <li>
+            <button
+              type="button"
+              class="solution-disclosure__item"
+              data-solution-chip={index}
+              data-solution-chip-id={solution.id}
+              data-active={index === 0 ? 'true' : 'false'}
+              aria-pressed={index === 0 ? 'true' : 'false'}
+            >
+              <strong>{solution.label}</strong>
+              <span>{solution.hint}</span>
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+
+    <a class="solution-disclosure__site-link" data-arm-site href={link.href} target="_blank" rel="noopener noreferrer">
+      <span class="solution-disclosure__site-copy">
+        <strong>Ir para o site da ARM</strong>
+      </span>
+      <span class="solution-disclosure__site-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="13" height="13">
+          <path d="M8 16 16 8M9.5 8H16v6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </a>
+  </div>
+
+  <!-- Dentro da <details> de propósito: colocado a seguir, o Astro renderiza-o como irmão
+       e o <script> passa a ser filho directo de .link-list, o que estraga a estrutura da lista. -->
+  <script>
+  document.querySelectorAll<HTMLElement>('[data-solutions-disclosure]').forEach((disclosure) => {
+    const carousel = disclosure.querySelector<HTMLElement>('[data-solution-carousel]');
+    const slides = [...disclosure.querySelectorAll<HTMLElement>('[data-solution-slide]')];
+    const dots = [...disclosure.querySelectorAll<HTMLButtonElement>('[data-solution-dot]')];
+    const chips = [...disclosure.querySelectorAll<HTMLButtonElement>('[data-solution-chip]')];
+
+    if (!carousel || slides.length < 2) return;
+
+    // Autoavanço a 8 s. DECISÃO DO JULISMO, confirmada por escrito a 2026-08-09 depois de
+    // ter sido removida duas vezes: a rotação existe para dar a conhecer as três soluções
+    // a quem não carrega em nada. Não remover sem palavra dele. As três regras à volta:
+    // uma escolha manual cancela a rotação de vez, o rato em cima pausa-a, e com
+    // prefers-reduced-motion nunca chega a arrancar.
+    const SLIDE_MS = 8000;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let index = 0;
+    let timer: number | undefined;
+    let chosenByVisitor = false;
+
+    const stop = () => {
+      if (timer !== undefined) window.clearInterval(timer);
+      timer = undefined;
+    };
+
+    const start = () => {
+      stop();
+      if (chosenByVisitor || reduced.matches || !disclosure.hasAttribute('open')) return;
+      timer = window.setInterval(() => {
+        index = (index + 1) % slides.length;
+        paint();
+      }, SLIDE_MS);
+    };
+
+    const paint = () => {
+      slides.forEach((slide, position) => {
+        const on = position === index;
+        slide.dataset.active = String(on);
+        slide.setAttribute('aria-hidden', String(!on));
+      });
+      dots.forEach((dot, position) => {
+        const on = position === index;
+        dot.dataset.active = String(on);
+        dot.setAttribute('aria-selected', String(on));
+        // Roving tabindex: o grupo de bolinhas é UMA paragem de tabulação, e as setas
+        // movem-se lá dentro. Sem isto seriam três paragens a fazer o que os chips já fazem.
+        dot.tabIndex = on ? 0 : -1;
+      });
+      chips.forEach((chip, position) => {
+        const on = position === index;
+        chip.dataset.active = String(on);
+        chip.setAttribute('aria-pressed', String(on));
+      });
+    };
+
+    const goTo = (next: number, byVisitor = true) => {
+      index = ((next % slides.length) + slides.length) % slides.length;
+      if (byVisitor) {
+        chosenByVisitor = true;
+        stop();
+      }
+      paint();
+    };
+
+    dots.forEach((dot, position) => dot.addEventListener('click', () => goTo(position)));
+    chips.forEach((chip, position) => chip.addEventListener('click', () => goTo(position)));
+
+    carousel.addEventListener('pointerenter', stop);
+    carousel.addEventListener('pointerleave', start);
+
+    // Padrão ARIA de tabs: setas navegam dentro do tablist, Home e End vão aos extremos.
+    dots.forEach((dot) => {
+      dot.addEventListener('keydown', (event) => {
+        const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+        const jump = event.key === 'Home' ? 0 : event.key === 'End' ? slides.length - 1 : undefined;
+        if (step === undefined && jump === undefined) return;
+        event.preventDefault();
+        goTo(jump ?? index + step!);
+        dots[index]!.focus();
+      });
+    });
+
+    const hydrateImages = () => {
+      disclosure.querySelectorAll<HTMLImageElement>('[data-solution-image][data-src]').forEach((image) => {
+        image.src = image.dataset.src ?? '';
+        delete image.dataset.src;
+      });
+    };
+
+    disclosure.addEventListener('toggle', () => {
+      if (disclosure.hasAttribute('open')) {
+        hydrateImages();
+        chosenByVisitor = false;
+        goTo(0, false);
+        start();
+      } else {
+        stop();
+      }
+    });
+
+    if (disclosure.hasAttribute('open')) hydrateImages();
+
+    reduced.addEventListener('change', start);
+    paint();
+    start();
+  });
+</script>
+</details>

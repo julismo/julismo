@@ -1,0 +1,19 @@
+---
+const bookingUrl = 'https://cal.com/julismo-costa-3nxpms/30min';
+---
+
+<dialog id="cal-dialog" class="cal-dialog" aria-labelledby="cal-dialog-title">
+  <div class="cal-dialog__panel">
+    <header class="cal-dialog__header">
+      <h2 id="cal-dialog-title">Agendar diagnóstico</h2>
+      <button type="button" class="cal-dialog__close" data-cal-close aria-label="Fechar agendamento">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+      </button>
+    </header>
+    <p class="cal-dialog__status" data-cal-status role="status">A preparar o calendário…</p>
+    <div id="cal-embed-container" class="cal-dialog__embed"></div>
+    <footer class="cal-dialog__footer">
+      <a href={bookingUrl} target="_blank" rel="noopener noreferrer">Ou abrir em nova página</a>
+    </footer>
+  </div>
+</dialog>

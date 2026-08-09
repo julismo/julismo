@@ -1,0 +1,6 @@
+# Perfil de uma página só. Tudo é indexável.
+# Sem linha Sitemap de propósito: para uma única rota não acrescenta nada, e apontar
+# para um sitemap-index.xml inexistente só produzia 404 nos crawlers.
+
+User-agent: *
+Allow: /

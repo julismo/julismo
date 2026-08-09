@@ -1,0 +1,916 @@
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 0;
+  overflow-x: clip;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-width: 0;
+  min-height: 100svh;
+  margin: 0;
+  overflow-x: clip;
+  background: var(--color-bg);
+}
+
+body::before {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background: radial-gradient(ellipse 88% 38% at 50% -3%, #3b3b42 0%, #18181b 48%, var(--color-bg) 86%);
+  content: '';
+  pointer-events: none;
+}
+
+body::after {
+  position: fixed;
+  z-index: 0;
+  top: -100px;
+  left: 50%;
+  width: 240px;
+  height: 155px;
+  border-radius: 50%;
+  background: rgb(238 238 243 / 9%);
+  content: '';
+  filter: blur(24px);
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: ambient-shift 9s ease-in-out infinite alternate;
+}
+
+a {
+  color: inherit;
+}
+
+.page-shell {
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+  width: min(calc(100% - 40px), var(--content-width));
+  margin: 0 auto;
+  padding: 0 0 30px;
+}
+
+@media (max-width: 480px) {
+  .page-shell {
+    padding-bottom: max(72px, 10svh);
+  }
+}
+
+.profile-hero {
+  display: grid;
+  width: 100vw;
+  justify-items: center;
+  gap: 0;
+  margin-left: calc(50% - 50vw);
+  margin-bottom: 21px;
+  text-align: center;
+}
+
+.profile-hero__banner {
+  position: relative;
+  z-index: 0;
+  width: 100vw;
+  height: clamp(178px, 49vw, 210px);
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+}
+
+.profile-hero__banner::before {
+  position: absolute;
+  z-index: 2;
+  right: 10%;
+  bottom: 2px;
+  left: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 12%) 15%, rgb(239 239 244 / 46%) 50%, rgb(255 255 255 / 12%) 85%, transparent);
+  box-shadow: 0 0 16px rgb(255 255 255 / 9%), 0 8px 22px rgb(0 0 0 / 46%);
+  content: '';
+  pointer-events: none;
+}
+
+.profile-hero__banner::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 42%, rgb(10 10 11 / 14%) 65%, rgb(10 10 11 / 76%) 88%, var(--color-bg));
+  content: '';
+  pointer-events: none;
+}
+
+.profile-hero__banner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 76%;
+}
+
+@media (max-width: 480px) {
+  .profile-hero__banner img {
+    object-position: right center;
+  }
+}
+
+@media (min-width: 768px) {
+  .page-shell {
+    width: min(calc(100% - 48px), 430px);
+    padding-bottom: 34px;
+  }
+
+  .profile-hero__banner {
+    height: clamp(210px, 16vw, 260px);
+  }
+
+  .profile-hero__banner::after {
+    background: linear-gradient(to bottom, transparent 76%, rgb(10 10 11 / 8%) 88%, var(--color-bg));
+  }
+
+  .profile-hero__banner img {
+    object-position: center bottom;
+  }
+}
+
+.profile-hero__image {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 94px;
+  height: 94px;
+  margin-top: -47px;
+  margin-bottom: 11px;
+  border: 1px solid #76767f;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 5px rgb(255 255 255 / 3.5%), 0 12px 24px rgb(0 0 0 / 42%);
+}
+
+.profile-hero__name-row {
+  display: grid;
+  position: relative;
+  width: fit-content;
+  place-items: center;
+}
+
+.profile-hero h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(1.45rem, 5vw, 1.62rem);
+  font-weight: 720;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.verified-rosette {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 6px);
+  width: 21px;
+  height: 21px;
+  object-fit: contain;
+  transform: translateY(-50%);
+}
+
+.profile-hero__bio {
+  max-width: 31ch;
+  margin: 8px auto 0;
+  color: #aaabb3;
+  font-size: 0.86rem;
+  font-weight: 400;
+  line-height: 1.42;
+}
+
+.motion-consent {
+  min-height: 34px;
+  margin: 12px auto 0;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgb(43 43 48 / 92%), rgb(20 20 23 / 94%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%), 0 6px 16px rgb(0 0 0 / 18%);
+  color: #dedee4;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  padding: 0 13px;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.motion-consent[hidden] {
+  display: none;
+}
+
+@media (hover: hover) {
+  .motion-consent:hover {
+    border-color: rgb(255 255 255 / 30%);
+    background: linear-gradient(135deg, rgb(58 58 64 / 96%), rgb(26 26 30 / 96%));
+    transform: translateY(-1px);
+  }
+}
+
+.motion-consent:focus-visible {
+  outline: 2px solid #f1f1f4;
+  outline-offset: 3px;
+}
+
+.motion-consent:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.link-list {
+  display: grid;
+  gap: 8px;
+}
+
+.link-list[data-profile-plane] {
+  transform: perspective(850px) translate3d(var(--shift-x, 0), var(--shift-y, 0), 0) rotateX(var(--tilt-x, 0)) rotateY(var(--tilt-y, 0));
+  transform-origin: center;
+  will-change: transform;
+}
+
+.link-section-label {
+  justify-self: start;
+  margin: 6px 0 -1px 58px;
+  color: var(--color-faint);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+@media (min-width: 768px) {
+  .link-list {
+    gap: 4px;
+  }
+
+  .link-section-label {
+    margin: 2px 0 -3px 58px;
+  }
+}
+
+.link-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 66px;
+  gap: 11px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: linear-gradient(115deg, rgb(31 31 35 / 96%), rgb(17 17 19 / 94%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3.5%);
+  color: #eeeeef;
+  overflow: hidden;
+  padding: 8px 13px;
+  position: relative;
+  text-decoration: none;
+  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.link-card:hover {
+  border-color: rgb(255 255 255 / 25%);
+  transform: translateY(-1px);
+}
+
+.link-card:active {
+  transform: translateY(0) scale(0.992);
+}
+
+.link-card:focus-visible {
+  outline: 3px solid #f1f1f4;
+  outline-offset: 4px;
+}
+
+.link-card__icon,
+.link-card__copy,
+.link-card__action {
+  position: relative;
+  z-index: 1;
+}
+
+.link-card__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 28%, rgb(255 255 255 / 12%), rgb(255 255 255 / 3.5%) 45%, rgb(0 0 0 / 22%));
+  box-shadow: inset 0 1px 2px rgb(255 255 255 / 8%), 0 3px 8px rgb(0 0 0 / 20%);
+  color: #ededf0;
+}
+
+.brand-icon__svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.brand-icon__arm {
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  line-height: 1;
+}
+
+.link-card__copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.link-card__copy strong {
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link-card__copy small {
+  overflow: hidden;
+  color: #9898a2;
+  font-size: 0.74rem;
+  font-weight: 400;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link-card__action {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 17%);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgb(255 255 255 / 10%), rgb(0 0 0 / 22%));
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 8%), 0 3px 10px rgb(0 0 0 / 24%);
+  color: #e8e8ec;
+}
+
+.link-card__action-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.link-card:hover .link-card__action {
+  border-color: rgb(255 255 255 / 34%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 16%), rgb(0 0 0 / 20%));
+}
+
+.link-card--work {
+  border-color: var(--color-line-strong);
+  background: linear-gradient(110deg, #202025, #111113 62%, #1a1a1f);
+}
+
+/* A disclosure é UM cartão que cresce: a borda e o fundo vivem aqui, não no summary,
+   para o painel aberto ficar dentro da mesma caixa em vez de parecer um bloco à parte. */
+.solution-disclosure {
+  display: grid;
+  min-width: 0;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  background: linear-gradient(110deg, #202025, #111113 62%, #1a1a1f);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3.5%);
+  overflow: hidden;
+}
+
+.solution-disclosure > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+/* O summary continua a ser um .link-card para herdar a grelha e a tipografia,
+   mas deixa de desenhar a sua própria caixa. */
+.solution-disclosure > summary.link-card {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.solution-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.solution-disclosure[open] .link-card__action-icon {
+  transform: rotate(180deg);
+}
+
+.solution-disclosure .link-card__action {
+  width: 29px;
+  height: 29px;
+  opacity: 0.86;
+}
+
+.solution-disclosure .link-card__action-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.solution-disclosure__panel {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  padding: 2px 11px 11px;
+}
+
+/* Separador em vez de uma segunda borda: mantém a leitura de caixa única. */
+.solution-disclosure__panel::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background: var(--color-line);
+  margin: 0 -11px 2px;
+}
+
+/* ---- Carrossel ---- */
+
+.solution-carousel {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0b0b0d;
+}
+
+.solution-carousel__viewport {
+  position: relative;
+  aspect-ratio: 21 / 9;
+}
+
+.solution-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.55s ease, visibility 0s linear 0.55s;
+}
+
+.solution-slide[data-active='true'] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.55s ease, visibility 0s;
+}
+
+.solution-slide__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.78) contrast(0.96) brightness(0.88);
+  display: block;
+}
+
+/* O texto é HTML por cima da arte, nunca queimado na imagem: muda copy sem regerar arte.
+   A arte pode cruzar-se (duas imagens a 50% lêem-se como uma), mas o texto NÃO: dois títulos
+   sobrepostos a meio da transição ficam ilegíveis. Por isso o texto sai depressa e entra
+   com atraso, de forma a nunca haver dois ao mesmo tempo. */
+.solution-slide__copy {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: grid;
+  gap: 2px;
+  padding: 22px 13px 11px;
+  background: linear-gradient(to top, rgb(6 6 8 / 88%) 0%, rgb(6 6 8 / 55%) 55%, transparent 100%);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+.solution-slide[data-active='true'] .solution-slide__copy {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.28s ease 0.22s, transform 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.22s;
+}
+
+.solution-slide__copy strong {
+  font-size: 0.8rem;
+  font-weight: 660;
+  line-height: 1.2;
+  color: #f4f4f7;
+}
+
+.solution-slide__copy span {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: #b9b9c2;
+}
+
+/* ---- Bolinhas ---- */
+
+.solution-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 1px 0 0;
+}
+
+.solution-dots__dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 20%);
+  cursor: pointer;
+  transition: background 0.25s ease, width 0.25s ease;
+}
+
+.solution-dots__dot[data-active='true'] {
+  width: 16px;
+  border-radius: 3px;
+  background: #e8e8ec;
+}
+
+.solution-dots__dot:focus-visible {
+  outline: 2px solid #f1f1f4;
+  outline-offset: 3px;
+}
+
+/* ---- Chips: também são a navegação do carrossel ---- */
+
+/* Três colunas: as três soluções lêem-se como um conjunto, de relance. Em duas colunas
+   o terceiro chip fica sozinho a ocupar a linha toda e desequilibra o bloco. */
+.solution-disclosure__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Só abaixo de 340px é que três colunas deixam de caber sem cortar palavras. */
+@media (max-width: 340px) {
+  .solution-disclosure__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .solution-disclosure__list > li:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.solution-disclosure__item {
+  display: grid;
+  align-content: start;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 72px;
+  gap: 2px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 2.5%);
+  color: var(--color-text);
+  padding: 8px 9px 9px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.solution-disclosure__item[data-active='true'] {
+  border-color: rgb(255 255 255 / 20%);
+  background: rgb(255 255 255 / 7%);
+}
+
+.solution-disclosure__item:focus-visible {
+  outline: 2px solid #f1f1f4;
+  outline-offset: 2px;
+}
+
+.solution-disclosure__item strong {
+  font-size: 0.7rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.solution-disclosure__item span {
+  color: var(--color-muted);
+  font-size: 0.63rem;
+  line-height: 1.3;
+}
+
+/* ---- CTA: passa de link de texto a cartão, como os outros destinos da página ---- */
+
+/* Mesmo material dos outros destinos da página: borda, fundo, raio, sombra e altura
+   iguais aos de `.link-card`. Só a grelha difere, porque este não tem ícone à esquerda. */
+.solution-disclosure__site-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 66px;
+  padding: 8px 13px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: linear-gradient(115deg, rgb(31 31 35 / 96%), rgb(17 17 19 / 94%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3.5%);
+  color: #eeeeef;
+  text-decoration: none;
+  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.solution-disclosure__site-link:active {
+  transform: translateY(0) scale(0.992);
+}
+
+.solution-disclosure__site-copy strong {
+  display: block;
+  font-size: 0.79rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.solution-disclosure__site-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 17%);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgb(255 255 255 / 10%), rgb(0 0 0 / 22%));
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 8%), 0 3px 10px rgb(0 0 0 / 24%);
+  color: #e8e8ec;
+}
+
+.solution-disclosure__site-link:hover {
+  border-color: rgb(255 255 255 / 25%);
+  transform: translateY(-1px);
+}
+
+.solution-disclosure__site-link:hover .solution-disclosure__site-icon {
+  border-color: rgb(255 255 255 / 34%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 16%), rgb(0 0 0 / 20%));
+}
+
+.solution-disclosure__site-link:focus-visible {
+  outline: 2px solid #f1f1f4;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .solution-disclosure .link-card__action-icon {
+    transition: transform 160ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .solution-disclosure .link-card__action-icon,
+  .solution-disclosure__panel,
+  .solution-slide,
+  .solution-slide__copy,
+  .solution-dots__dot,
+  .solution-disclosure__item {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Só o deslize de entrada do texto é que desaparece. O `transform` NÃO é neutralizado
+     em bloco de propósito: a rotação do chevron indica que a secção está aberta, é
+     informação de estado e não decoração, e tem de sobreviver ao reduced-motion. */
+  .solution-slide__copy {
+    transform: none !important;
+  }
+}
+
+.link-card--primary {
+  border-color: transparent;
+  background: #151517;
+  isolation: isolate;
+}
+
+.link-card--primary::before {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: 180%;
+  aspect-ratio: 1;
+  background: conic-gradient(from 0deg, transparent 0deg 247deg, #686871 270deg, #f7f7fa 294deg, #83838d 314deg, transparent 340deg);
+  content: '';
+  transform: translate(-50%, -50%);
+  animation: silver-beam 8.5s linear infinite;
+}
+
+.link-card--primary::after {
+  position: absolute;
+  z-index: 0;
+  inset: 1px;
+  border-radius: calc(var(--radius-card) - 1px);
+  background: linear-gradient(112deg, #17171a, #111113 53%, #1c1c20);
+  content: '';
+}
+
+
+@keyframes silver-beam {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes ambient-shift {
+  from {
+    opacity: 0.42;
+    transform: translateX(calc(-50% - 10px)) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(calc(-50% + 14px)) scale(1.08);
+  }
+}
+
+.cal-dialog {
+  width: min(640px, calc(100vw - 32px));
+  max-width: none;
+  height: min(800px, calc(100dvh - 32px));
+  max-height: none;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 22px;
+  background: #111113;
+  color: var(--color-text);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 65%);
+  padding: 0;
+}
+
+.cal-dialog::backdrop {
+  background: rgb(0 0 0 / 68%);
+  backdrop-filter: blur(8px);
+}
+
+.cal-dialog__panel {
+  display: grid;
+  position: relative;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+  overflow: hidden;
+}
+
+.cal-dialog__header,
+.cal-dialog__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-color: var(--color-line);
+  border-style: solid;
+}
+
+.cal-dialog__header {
+  min-height: 64px;
+  border-width: 0 0 1px;
+  padding: 14px 16px 14px 20px;
+}
+
+.cal-dialog__header h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.cal-dialog__close {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 17%);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgb(255 255 255 / 10%), rgb(0 0 0 / 22%));
+  color: #e8e8ec;
+  cursor: pointer;
+}
+
+.cal-dialog__close:hover {
+  border-color: rgb(255 255 255 / 34%);
+}
+
+.cal-dialog__close:focus-visible,
+.cal-dialog__footer a:focus-visible {
+  outline: 3px solid #f1f1f4;
+  outline-offset: 3px;
+}
+
+.cal-dialog__close svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.cal-dialog__status {
+  z-index: 1;
+  grid-row: 2;
+  align-self: start;
+  margin: 12px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: #1a1a1f;
+  color: #aaabb3;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  padding: 10px 12px;
+  pointer-events: none;
+}
+
+.cal-dialog__embed {
+  grid-row: 2;
+  min-height: 600px;
+  overflow: auto;
+}
+
+.cal-dialog__footer {
+  justify-content: center;
+  min-height: 54px;
+  border-width: 1px 0 0;
+  padding: 12px 20px;
+}
+
+.cal-dialog__footer a {
+  color: #d8d8dd;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+@keyframes cal-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cal-dialog[open] {
+    animation: cal-dialog-in 180ms ease-out;
+  }
+}
+
+@media (max-width: 480px) {
+  .cal-dialog {
+    width: 100vw;
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .cal-dialog__embed {
+    min-height: calc(100dvh - 118px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
+  [data-profile-plane] {
+    transform: none;
+    will-change: auto;
+  }
+
+  .link-card--primary::before {
+    animation: none;
+  }
+}

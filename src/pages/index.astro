@@ -1,0 +1,36 @@
+---
+import LinkCard from '../components/LinkCard.astro';
+import SolutionDisclosure from '../components/SolutionDisclosure.astro';
+import CalDialog from '../components/CalDialog.astro';
+import ProfileHero from '../components/ProfileHero.astro';
+import { armSolutions, profile } from '../data/profile';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const sectionLabels = {
+  solutions: 'SOLU\u00c7\u00d5ES',
+  presence: 'PRESEN\u00c7A',
+} as const;
+---
+
+<BaseLayout title={'Julismo \u2014 Processos mais simples'} description={profile.bio}>
+  <main class="page-shell">
+    <ProfileHero name={profile.name} bio={profile.bio} image={profile.image} />
+    <nav class="link-list" data-profile-plane aria-label="Contactos e presen&#231;a digital">
+      {
+        profile.links.map((link, index) => (
+          <>
+            {link.section in sectionLabels && profile.links[index - 1]?.section !== link.section && (
+              <span class="link-section-label">{sectionLabels[link.section as keyof typeof sectionLabels]}</span>
+            )}
+            {link.id === 'arm' ? <SolutionDisclosure link={link} solutions={armSolutions} /> : <LinkCard link={link} />}
+          </>
+        ))
+      }
+    </nav>
+  </main>
+  <CalDialog />
+  <script>
+    import '../scripts/motion';
+    import '../scripts/cal-dialog';
+  </script>
+</BaseLayout>

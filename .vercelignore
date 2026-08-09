@@ -1,0 +1,12 @@
+# Local build, test, and review artefacts are not deployment inputs.
+/.astro/
+/.playwright-cli/
+/.superpowers/
+/dist/
+/output/
+/test-results/
+
+# These sources are useful locally but are not required by the Astro production build.
+/docs/
+/tests/
+/scripts/
