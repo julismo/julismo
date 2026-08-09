@@ -17,6 +17,7 @@
 - Do not add dependencies or a JavaScript module.
 - No horizontal overflow at 280px, 320px, 390px, tablet or desktop.
 - Respect prefers-reduced-motion.
+- At desktop 1440 by 900, leave at least 32px of black background after the GitHub card.
 
 ---
 
@@ -177,9 +178,9 @@ Run the Task 1 commands again. Expected: both pass.
 - Consumes link-card, radius-card, existing focus, hover and reduced-motion styles.
 - Produces a chevron that rotates on open, three compact nested solution items, an ARM site link and no overflow.
 
-- [ ] **Step 1: Add a failing E2E geometry and keyboard-order assertion.**
+- [ ] **Step 1: Add failing E2E geometry, keyboard-order and desktop-breathing-room assertions.**
 
-After opening the disclosure on mobile-390, assert no horizontal overflow, each solution item remains within the disclosure horizontal bounds, and Tab moves from summary to data-arm-site and then LinkedIn.
+After opening the disclosure on mobile-390, assert no horizontal overflow, each solution item remains within the disclosure horizontal bounds, and Tab moves from summary to data-arm-site and then LinkedIn. In a desktop-only test at 1440 by 900, assert there are at least 32px between the GitHub card bottom and the document end.
 
 - [ ] **Step 2: Add scoped CSS for the disclosure.**
 
@@ -192,7 +193,7 @@ After opening the disclosure on mobile-390, assert no horizontal overflow, each 
 .solution-disclosure__list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
 ~~~
 
-Use the existing dark palette and transitions only inside the no-preference media query.
+Use the existing dark palette and transitions only inside the no-preference media query. Increase the desktop page-shell bottom padding to preserve the 32px black background breathing room after GitHub.
 
 - [ ] **Step 3: Run the new focused browser test to prove GREEN.**
 

@@ -56,6 +56,7 @@ The three mini-cards are informational. The existing Agendar diagnóstico card r
 - Use three compact, readable solution items rather than large CTA cards.
 - Motion is limited to the chevron and panel transition; reduced-motion users receive an immediate static state.
 - The layout must remain free of horizontal overflow from 280px through desktop.
+- On desktop, keep at least 32px of black background after the final GitHub card so the final action never feels clipped against the viewport edge.
 
 ## Accessibility
 
