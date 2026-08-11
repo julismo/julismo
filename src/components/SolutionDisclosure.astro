@@ -210,12 +210,28 @@ const { link, solutions } = Astro.props;
       });
     };
 
+    const revealDisclosure = () => {
+      window.requestAnimationFrame(() => {
+        if (!disclosure.hasAttribute('open')) return;
+        const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+        const bottom = disclosure.getBoundingClientRect().bottom;
+        if (bottom <= viewportHeight - 8) return;
+
+        disclosure.querySelector<HTMLElement>('summary[data-arm-summary]')?.scrollIntoView({
+          behavior: reduced.matches ? 'auto' : 'smooth',
+          block: 'start',
+          inline: 'nearest',
+        });
+      });
+    };
+
     disclosure.addEventListener('toggle', () => {
       if (disclosure.hasAttribute('open')) {
         hydrateImages();
         chosenByVisitor = false;
         goTo(0, false);
         start();
+        revealDisclosure();
       } else {
         stop();
       }

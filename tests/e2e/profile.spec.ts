@@ -371,6 +371,26 @@ test('reveals ARM entry solutions progressively and keeps its website available'
   await expect(armSite).toHaveAttribute('rel', 'noopener noreferrer');
 });
 
+test('brings the expanded ARM disclosure fully into the narrow mobile viewport', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-320', 'Viewport recovery is covered at the narrowest supported mobile width.');
+
+  await page.goto('/');
+  const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  await disclosure.locator('summary[data-arm-summary]').click();
+  await expect(disclosure).toHaveAttribute('open', '');
+
+  await expect.poll(async () => disclosure.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    return window.scrollY > 0 && box.top >= 8 && box.bottom <= window.innerHeight - 8;
+  })).toBe(true);
+
+  const overflow = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+  }));
+  expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.viewportWidth);
+});
+
 test('ARM carousel supports manual keyboard selection', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'no-js', 'Carousel navigation is a JS enhancement; without it the first solution stays put.');
 
