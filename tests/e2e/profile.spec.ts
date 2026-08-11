@@ -391,6 +391,69 @@ test('brings the expanded ARM disclosure fully into the narrow mobile viewport',
   expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.viewportWidth);
 });
 
+test('brings the expanded ARM disclosure fully into the primary mobile viewport', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Viewport recovery is covered at the primary mobile width.');
+
+  await page.goto('/');
+  const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  await disclosure.locator('summary[data-arm-summary]').click();
+  await expect(disclosure).toHaveAttribute('open', '');
+
+  await expect.poll(async () => disclosure.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    return window.scrollY > 0 && box.top >= 8 && box.bottom <= window.innerHeight - 8;
+  })).toBe(true);
+
+  const overflow = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+  }));
+  expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.viewportWidth);
+});
+
+test('does not scroll the ARM disclosure when its expanded card is already visible', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'The no-scroll path is covered at the primary mobile width.');
+
+  await page.goto('/');
+  const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  const summary = disclosure.locator('summary[data-arm-summary]');
+  await page.evaluate(() => {
+    document.body.style.minHeight = '1400px';
+    window.scrollBy(0, 250);
+  });
+  await page.evaluate(() => {
+    const original = Element.prototype.scrollIntoView;
+    const calls: unknown[] = [];
+    Object.defineProperty(window, '__armRevealScrollCalls', { configurable: true, value: calls });
+    Element.prototype.scrollIntoView = function scrollIntoView(options) {
+      if (this.matches('summary[data-arm-summary]')) calls.push(options);
+      return original.call(this, options);
+    };
+  });
+  const scrollY = await page.evaluate(() => window.scrollY);
+
+  await summary.click();
+  await expect(disclosure).toHaveAttribute('open', '');
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()));
+  }));
+
+  const state = await disclosure.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    return {
+      top: box.top,
+      bottom: box.bottom,
+      viewportHeight: window.innerHeight,
+      scrollY: window.scrollY,
+      revealScrollCalls: (window as unknown as Window & { __armRevealScrollCalls: unknown[] }).__armRevealScrollCalls,
+    };
+  });
+  expect(state.top).toBeGreaterThanOrEqual(8);
+  expect(state.bottom).toBeLessThanOrEqual(state.viewportHeight - 8);
+  expect(Math.abs(state.scrollY - scrollY)).toBeLessThanOrEqual(1);
+  expect(state.revealScrollCalls).toEqual([]);
+});
+
 test('ARM carousel supports manual keyboard selection', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'no-js', 'Carousel navigation is a JS enhancement; without it the first solution stays put.');
 
@@ -622,9 +685,23 @@ test('keeps the ARM disclosure action static when reduced motion is requested', 
   await expect(disclosure).not.toHaveAttribute('open', '');
   await expect(actionIcon).toHaveCSS('transform', 'none');
 
+  await page.evaluate(() => {
+    const original = Element.prototype.scrollIntoView;
+    const calls: unknown[] = [];
+    Object.defineProperty(window, '__armRevealScrollCalls', { configurable: true, value: calls });
+    Element.prototype.scrollIntoView = function scrollIntoView(options) {
+      if (this.matches('summary[data-arm-summary]')) calls.push(options);
+      return original.call(this, options);
+    };
+  });
+
   await summary.focus();
   await page.keyboard.press('Enter');
   await expect(disclosure).toHaveAttribute('open', '');
+  await expect.poll(async () => disclosure.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    return window.scrollY > 0 && box.top >= 8 && box.bottom <= window.innerHeight - 8;
+  })).toBe(true);
 
   const state = await page.evaluate(() => {
     const action = document.querySelector<HTMLElement>(
@@ -657,10 +734,20 @@ test('keeps the ARM disclosure action static when reduced motion is requested', 
       actionTransform: getComputedStyle(action).transform,
       actionTiming: timingInSeconds(action),
       panelTiming: timingInSeconds(panel),
+      panelAnimationName: getComputedStyle(panel).animationName,
+      disclosureBox: document.querySelector<HTMLElement>(
+        'details[data-solutions-disclosure][data-link-id="arm"]',
+      )!.getBoundingClientRect(),
+      viewportHeight: window.innerHeight,
+      revealScrollCalls: (window as unknown as Window & { __armRevealScrollCalls: unknown[] }).__armRevealScrollCalls,
     };
   });
 
   expect(state.actionTransform).toBe('matrix(-1, 0, 0, -1, 0, 0)');
+  expect(state.disclosureBox.top).toBeGreaterThanOrEqual(8);
+  expect(state.disclosureBox.bottom).toBeLessThanOrEqual(state.viewportHeight - 8);
+  expect(state.panelAnimationName).toBe('none');
+  expect(state.revealScrollCalls).toContainEqual(expect.objectContaining({ behavior: 'auto' }));
   for (const timing of [state.actionTiming, state.panelTiming]) {
     expect(timing.animationDuration).toBe(0);
     expect(timing.animationDelay).toBe(0);
