@@ -454,6 +454,64 @@ test('does not scroll the ARM disclosure when its expanded card is already visib
   expect(state.revealScrollCalls).toEqual([]);
 });
 
+test('does not scroll ARM when a panned visual viewport already contains it', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'Visual viewport coordinates are covered at the primary mobile width.');
+
+  await page.goto('/');
+  const disclosure = page.locator('details[data-solutions-disclosure][data-link-id="arm"]');
+  const summary = disclosure.locator('summary[data-arm-summary]');
+  await page.evaluate(() => {
+    document.body.style.minHeight = '1400px';
+    window.scrollTo(0, 250);
+    Object.defineProperty(window, 'visualViewport', {
+      configurable: true,
+      value: { offsetTop: 250, height: window.innerHeight - 250 },
+    });
+
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    const scrollCalls: unknown[] = [];
+    Object.defineProperty(window, '__armRevealScrollCalls', { configurable: true, value: scrollCalls });
+    Element.prototype.scrollIntoView = function scrollIntoView(options) {
+      if (this.matches('summary[data-arm-summary]')) scrollCalls.push(options);
+      return originalScrollIntoView.call(this, options);
+    };
+  });
+  const scrollY = await page.evaluate(() => window.scrollY);
+
+  await summary.focus();
+  await disclosure.evaluate((element) => {
+    const originalGetBoundingClientRect = element.getBoundingClientRect.bind(element);
+    let measurements = 0;
+    Object.defineProperty(window, '__armRevealMeasurements', { configurable: true, get: () => measurements });
+    element.getBoundingClientRect = () => {
+      measurements += 1;
+      return originalGetBoundingClientRect();
+    };
+  });
+  await page.keyboard.press('Enter');
+  await expect(disclosure).toHaveAttribute('open', '');
+  await expect.poll(() => page.evaluate(() => (window as unknown as Window & {
+    __armRevealMeasurements: number;
+  }).__armRevealMeasurements)).toBeGreaterThan(0);
+
+  const state = await disclosure.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const viewport = window.visualViewport!;
+    return {
+      top: box.top,
+      bottom: box.bottom,
+      viewportTop: viewport.offsetTop,
+      viewportBottom: viewport.offsetTop + viewport.height,
+      scrollY: window.scrollY,
+      revealScrollCalls: (window as unknown as Window & { __armRevealScrollCalls: unknown[] }).__armRevealScrollCalls,
+    };
+  });
+  expect(state.top).toBeGreaterThanOrEqual(state.viewportTop + 8);
+  expect(state.bottom).toBeLessThanOrEqual(state.viewportBottom - 8);
+  expect(Math.abs(state.scrollY - scrollY)).toBeLessThanOrEqual(1);
+  expect(state.revealScrollCalls).toEqual([]);
+});
+
 test('ARM carousel supports manual keyboard selection', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'no-js', 'Carousel navigation is a JS enhancement; without it the first solution stays put.');
 

@@ -213,9 +213,12 @@ const { link, solutions } = Astro.props;
     const revealDisclosure = () => {
       window.requestAnimationFrame(() => {
         if (!disclosure.hasAttribute('open')) return;
-        const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+        const visualViewport = window.visualViewport;
+        const viewportBottom = visualViewport
+          ? visualViewport.offsetTop + visualViewport.height
+          : window.innerHeight;
         const bottom = disclosure.getBoundingClientRect().bottom;
-        if (bottom <= viewportHeight - 8) return;
+        if (bottom <= viewportBottom - 8) return;
 
         disclosure.querySelector<HTMLElement>('summary[data-arm-summary]')?.scrollIntoView({
           behavior: reduced.matches ? 'auto' : 'smooth',
