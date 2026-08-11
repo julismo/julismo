@@ -401,6 +401,7 @@ a {
 .solution-disclosure > summary {
   cursor: pointer;
   list-style: none;
+  scroll-margin-block-start: clamp(12px, 4vh, 32px);
 }
 
 /* O summary continua a ser um .link-card para herdar a grelha e a tipografia,
@@ -436,6 +437,22 @@ a {
   min-width: 0;
   gap: 8px;
   padding: 2px 11px 11px;
+}
+
+.solution-disclosure[open] .solution-disclosure__panel {
+  animation: solution-disclosure-reveal 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes solution-disclosure-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Separador em vez de uma segunda borda: mantém a leitura de caixa única. */
@@ -683,6 +700,10 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .solution-disclosure[open] .solution-disclosure__panel {
+    animation: none;
+  }
+
   .solution-disclosure .link-card__action-icon,
   .solution-disclosure__panel,
   .solution-slide,
