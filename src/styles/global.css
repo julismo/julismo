@@ -261,7 +261,7 @@ a {
 
 @media (min-width: 768px) {
   .link-list {
-    gap: 4px;
+    gap: 8px;
   }
 
   .link-section-label {

@@ -138,6 +138,34 @@ test('keeps the desktop banner legible and the solutions hierarchy contained', a
   expect(layout.horizontalOverflow).toBe(false);
 });
 
+test('keeps an eight-pixel card rhythm on desktop', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Desktop rhythm is calibrated once at 1440 by 900.');
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const rhythm = await page.locator('.link-list').evaluate((list) => {
+    const first = list.querySelector<HTMLElement>('[data-link-id="whatsapp"]')!.getBoundingClientRect();
+    const second = list.querySelector<HTMLElement>('[data-link-id="cal"]')!.getBoundingClientRect();
+    const third = list.querySelector<HTMLElement>('[data-link-id="email"]')!.getBoundingClientRect();
+
+    return {
+      rowGap: getComputedStyle(list).rowGap,
+      firstToSecond: second.top - first.bottom,
+      secondToThird: third.top - second.bottom,
+      scrollHeight: document.documentElement.scrollHeight,
+      viewportHeight: window.innerHeight,
+      horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth,
+    };
+  });
+
+  expect(rhythm.rowGap).toBe('8px');
+  expect(rhythm.firstToSecond).toBeCloseTo(8, 1);
+  expect(rhythm.secondToThird).toBeCloseTo(8, 1);
+  expect(rhythm.scrollHeight).toBeLessThanOrEqual(rhythm.viewportHeight);
+  expect(rhythm.horizontalOverflow).toBe(false);
+});
+
 test('keeps cards comfortably inset within mobile safe gutters', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-390', 'Safe touch gutters are calibrated at the primary mobile viewport.');
 
