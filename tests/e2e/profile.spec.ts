@@ -84,6 +84,57 @@ test('uses a desktop banner focal point without changing the mobile crop', async
   }
 });
 
+test('keeps an opaque avatar shell while the portrait is loading', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-390', 'The avatar loading state is calibrated at the primary mobile viewport.');
+
+  let releasePortrait!: () => void;
+  const portraitGate = new Promise<void>((resolve) => {
+    releasePortrait = resolve;
+  });
+
+  await page.route('**/images/julismo-profile.png', async (route) => {
+    await portraitGate;
+    await route.continue();
+  });
+
+  try {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const portrait = page.locator('.profile-hero__image');
+    const shell = await portrait.evaluate((element) => {
+      const image = element as HTMLImageElement;
+      return {
+        complete: image.complete,
+        naturalWidth: image.naturalWidth,
+        backgroundColor: getComputedStyle(image).backgroundColor,
+        borderRadius: getComputedStyle(image).borderRadius,
+      };
+    });
+
+    expect(shell.complete).toBe(false);
+    expect(shell.naturalWidth).toBe(0);
+    expect(shell.backgroundColor).toBe('rgb(10, 10, 11)');
+    expect(shell.borderRadius).toBe('50%');
+    await expect(page.locator('head link[rel="preload"][as="image"]')).toHaveCount(1);
+    await expect(page.locator('head link[rel="preload"][as="image"]')).toHaveAttribute(
+      'href',
+      '/images/julismo-profile.png',
+    );
+    await expect(portrait).toHaveAttribute('loading', 'eager');
+    await expect(portrait).toHaveAttribute('decoding', 'async');
+    await expect(portrait).toHaveAttribute('width', '156');
+    await expect(portrait).toHaveAttribute('height', '156');
+    await expect(portrait).toHaveAttribute('alt', 'Retrato profissional de Julismo');
+
+    releasePortrait();
+    await expect.poll(() => portrait.evaluate((element) => {
+      const image = element as HTMLImageElement;
+      return image.complete && image.naturalWidth > 0;
+    })).toBe(true);
+  } finally {
+    releasePortrait();
+  }
+});
+
 test('keeps the desktop banner legible and the solutions hierarchy contained', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'Desktop composition is calibrated once at 1440 by 900.');
 

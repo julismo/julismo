@@ -147,6 +147,7 @@ a {
   height: 94px;
   margin-top: -47px;
   margin-bottom: 11px;
+  background: var(--color-bg);
   border: 1px solid #76767f;
   border-radius: 50%;
   object-fit: cover;
