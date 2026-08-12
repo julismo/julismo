@@ -51,6 +51,7 @@ const personSchema = {
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <link rel="preload" as="image" href={profile.image} />
     <link rel="canonical" href={siteUrl.href} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title}</title>
